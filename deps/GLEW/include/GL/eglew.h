@@ -690,6 +690,19 @@ typedef EGLBoolean ( * PFNEGLQUERYSURFACEPOINTERANGLEPROC) (EGLDisplay dpy, EGLS
 
 #endif /* EGL_ANGLE_surface_d3d_texture_2d_share_handle */
 
+/* ---------------------- EGL_ANGLE_sync_control_rate ---------------------- */
+
+#ifndef EGL_ANGLE_sync_control_rate
+#define EGL_ANGLE_sync_control_rate 1
+
+typedef EGLBoolean ( * PFNEGLGETMSCRATEANGLEPROC) (EGLDisplay dpy, EGLSurface surface, EGLint* numerator, EGLint* denominator);
+
+#define eglGetMscRateANGLE EGLEW_GET_FUN(__eglewGetMscRateANGLE)
+
+#define EGLEW_ANGLE_sync_control_rate EGLEW_GET_VAR(__EGLEW_ANGLE_sync_control_rate)
+
+#endif /* EGL_ANGLE_sync_control_rate */
+
 /* ---------------------- EGL_ANGLE_window_fixed_size ---------------------- */
 
 #ifndef EGL_ANGLE_window_fixed_size
@@ -812,6 +825,17 @@ typedef EGLBoolean ( * PFNEGLCOMPOSITORSWAPPOLICYEXTPROC) (EGLint external_win_i
 
 #endif /* EGL_EXT_compositor */
 
+/* ---------------------- EGL_EXT_config_select_group ---------------------- */
+
+#ifndef EGL_EXT_config_select_group
+#define EGL_EXT_config_select_group 1
+
+#define EGL_CONFIG_SELECT_GROUP_EXT 0x34C0
+
+#define EGLEW_EXT_config_select_group EGLEW_GET_VAR(__EGLEW_EXT_config_select_group)
+
+#endif /* EGL_EXT_config_select_group */
+
 /* ------------------- EGL_EXT_create_context_robustness ------------------- */
 
 #ifndef EGL_EXT_create_context_robustness
@@ -850,6 +874,17 @@ typedef EGLBoolean ( * PFNEGLCOMPOSITORSWAPPOLICYEXTPROC) (EGLint external_win_i
 
 #endif /* EGL_EXT_device_drm */
 
+/* --------------------- EGL_EXT_device_drm_render_node -------------------- */
+
+#ifndef EGL_EXT_device_drm_render_node
+#define EGL_EXT_device_drm_render_node 1
+
+#define EGL_DRM_RENDER_NODE_FILE_EXT 0x3377
+
+#define EGLEW_EXT_device_drm_render_node EGLEW_GET_VAR(__EGLEW_EXT_device_drm_render_node)
+
+#endif /* EGL_EXT_device_drm_render_node */
+
 /* ----------------------- EGL_EXT_device_enumeration ---------------------- */
 
 #ifndef EGL_EXT_device_enumeration
@@ -869,10 +904,28 @@ typedef EGLBoolean ( * PFNEGLQUERYDEVICESEXTPROC) (EGLint max_devices, EGLDevice
 #define EGL_EXT_device_openwf 1
 
 #define EGL_OPENWF_DEVICE_ID_EXT 0x3237
+#define EGL_OPENWF_DEVICE_EXT 0x333D
 
 #define EGLEW_EXT_device_openwf EGLEW_GET_VAR(__EGLEW_EXT_device_openwf)
 
 #endif /* EGL_EXT_device_openwf */
+
+/* ---------------------- EGL_EXT_device_persistent_id --------------------- */
+
+#ifndef EGL_EXT_device_persistent_id
+#define EGL_EXT_device_persistent_id 1
+
+#define EGL_DEVICE_UUID_EXT 0x335C
+#define EGL_DRIVER_UUID_EXT 0x335D
+#define EGL_DRIVER_NAME_EXT 0x335E
+
+typedef EGLBoolean ( * PFNEGLQUERYDEVICEBINARYEXTPROC) (EGLDeviceEXT device, EGLint name, EGLint max_size, void* value, EGLint* size);
+
+#define eglQueryDeviceBinaryEXT EGLEW_GET_FUN(__eglewQueryDeviceBinaryEXT)
+
+#define EGLEW_EXT_device_persistent_id EGLEW_GET_VAR(__EGLEW_EXT_device_persistent_id)
+
+#endif /* EGL_EXT_device_persistent_id */
 
 /* -------------------------- EGL_EXT_device_query ------------------------- */
 
@@ -893,6 +946,17 @@ typedef EGLBoolean ( * PFNEGLQUERYDISPLAYATTRIBEXTPROC) (EGLDisplay dpy, EGLint 
 #define EGLEW_EXT_device_query EGLEW_GET_VAR(__EGLEW_EXT_device_query)
 
 #endif /* EGL_EXT_device_query */
+
+/* ----------------------- EGL_EXT_device_query_name ----------------------- */
+
+#ifndef EGL_EXT_device_query_name
+#define EGL_EXT_device_query_name 1
+
+#define EGL_RENDERER_EXT 0x335F
+
+#define EGLEW_EXT_device_query_name EGLEW_GET_VAR(__EGLEW_EXT_device_query_name)
+
+#endif /* EGL_EXT_device_query_name */
 
 /* ------------------ EGL_EXT_gl_colorspace_bt2020_linear ------------------ */
 
@@ -1185,6 +1249,29 @@ typedef EGLDisplay ( * PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void*
 #define EGLEW_EXT_platform_x11 EGLEW_GET_VAR(__EGLEW_EXT_platform_x11)
 
 #endif /* EGL_EXT_platform_x11 */
+
+/* -------------------------- EGL_EXT_platform_xcb ------------------------- */
+
+#ifndef EGL_EXT_platform_xcb
+#define EGL_EXT_platform_xcb 1
+
+#define EGL_PLATFORM_XCB_EXT 0x31DC
+#define EGL_PLATFORM_XCB_SCREEN_EXT 0x31DE
+
+#define EGLEW_EXT_platform_xcb EGLEW_GET_VAR(__EGLEW_EXT_platform_xcb)
+
+#endif /* EGL_EXT_platform_xcb */
+
+/* ------------------------- EGL_EXT_present_opaque ------------------------ */
+
+#ifndef EGL_EXT_present_opaque
+#define EGL_EXT_present_opaque 1
+
+#define EGL_PRESENT_OPAQUE_EXT 0x31DF
+
+#define EGLEW_EXT_present_opaque EGLEW_GET_VAR(__EGLEW_EXT_present_opaque)
+
+#endif /* EGL_EXT_present_opaque */
 
 /* ----------------------- EGL_EXT_protected_content ----------------------- */
 
@@ -2766,6 +2853,8 @@ EGLEW_FUN_EXPORT PFNEGLPRESENTATIONTIMEANDROIDPROC __eglewPresentationTimeANDROI
 
 EGLEW_FUN_EXPORT PFNEGLQUERYSURFACEPOINTERANGLEPROC __eglewQuerySurfacePointerANGLE;
 
+EGLEW_FUN_EXPORT PFNEGLGETMSCRATEANGLEPROC __eglewGetMscRateANGLE;
+
 EGLEW_FUN_EXPORT PFNEGLCLIENTSIGNALSYNCEXTPROC __eglewClientSignalSyncEXT;
 
 EGLEW_FUN_EXPORT PFNEGLCOMPOSITORBINDTEXWINDOWEXTPROC __eglewCompositorBindTexWindowEXT;
@@ -2777,6 +2866,8 @@ EGLEW_FUN_EXPORT PFNEGLCOMPOSITORSETWINDOWLISTEXTPROC __eglewCompositorSetWindow
 EGLEW_FUN_EXPORT PFNEGLCOMPOSITORSWAPPOLICYEXTPROC __eglewCompositorSwapPolicyEXT;
 
 EGLEW_FUN_EXPORT PFNEGLQUERYDEVICESEXTPROC __eglewQueryDevicesEXT;
+
+EGLEW_FUN_EXPORT PFNEGLQUERYDEVICEBINARYEXTPROC __eglewQueryDeviceBinaryEXT;
 
 EGLEW_FUN_EXPORT PFNEGLQUERYDEVICEATTRIBEXTPROC __eglewQueryDeviceAttribEXT;
 EGLEW_FUN_EXPORT PFNEGLQUERYDEVICESTRINGEXTPROC __eglewQueryDeviceStringEXT;
@@ -2929,6 +3020,7 @@ EGLEW_VAR_EXPORT GLboolean __EGLEW_ANGLE_d3d_share_handle_client_buffer;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_ANGLE_device_d3d;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_ANGLE_query_surface_pointer;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_ANGLE_surface_d3d_texture_2d_share_handle;
+EGLEW_VAR_EXPORT GLboolean __EGLEW_ANGLE_sync_control_rate;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_ANGLE_window_fixed_size;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_ARM_image_format;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_ARM_implicit_external_sync;
@@ -2938,12 +3030,16 @@ EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_buffer_age;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_client_extensions;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_client_sync;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_compositor;
+EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_config_select_group;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_create_context_robustness;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_base;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_drm;
+EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_drm_render_node;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_enumeration;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_openwf;
+EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_persistent_id;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_query;
+EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_device_query_name;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_gl_colorspace_bt2020_linear;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_gl_colorspace_bt2020_pq;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_gl_colorspace_display_p3;
@@ -2964,6 +3060,8 @@ EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_platform_base;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_platform_device;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_platform_wayland;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_platform_x11;
+EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_platform_xcb;
+EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_present_opaque;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_protected_content;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_protected_surface;
 EGLEW_VAR_EXPORT GLboolean __EGLEW_EXT_stream_consumer_egloutput;

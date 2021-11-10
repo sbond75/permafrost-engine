@@ -67,6 +67,7 @@ struct box_xz{
 /* GLOBAL VARIABLES                                                          */
 /*****************************************************************************/
 
+#define sqrt(xMustBe2) 1.41421356237f // https://www.google.com/search?q=sqrt+2&oq=sqrt+2&aqs=chrome..69i57j0i67i131i433l4j0i67j69i60l2.936j0j7&sourceid=chrome&ie=UTF-8
 vec2_t g_flow_dir_lookup[9] = {
     [FD_NONE] = (vec2_t){  0.0f,               0.0f              },
     [FD_NW]   = (vec2_t){  1.0f / sqrt(2.0f), -1.0f / sqrt(2.0f) },
@@ -78,6 +79,7 @@ vec2_t g_flow_dir_lookup[9] = {
     [FD_S]    = (vec2_t){  0.0f,               1.0f              },
     [FD_SE]   = (vec2_t){ -1.0f / sqrt(2.0f),  1.0f / sqrt(2.0f) },
 };
+#undef sqrt
 
 /*****************************************************************************/
 /* STATIC FUNCTIONS                                                          */

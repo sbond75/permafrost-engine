@@ -293,9 +293,9 @@ __asm__(
 "                                               \n"
 "# (%rax) - pointer to 128 bits of task result  \n"
 "                                               \n"
-"sched_task_exit_trampoline:                    \n"
+"_sched_task_exit_trampoline:                    \n"
 "   mov %rax, %rcx                              \n"
-"   jmp sched_task_exit                         \n"
+"   jmp _sched_task_exit                         \n"
 );
 
 #else
@@ -303,7 +303,9 @@ __asm__(
 __asm__(
 ".text                                          \n"
 "                                               \n"
+#ifndef __APPLE__ // https://stackoverflow.com/questions/19720084/what-is-the-difference-between-assembly-on-mac-and-assembly-on-linux/19725269#19725269 <- https://stackoverflow.com/questions/20907946/error-unknown-directive-type-func-function
 ".type sched_switch_ctx, @function              \n"
+#endif
 "                                               \n"
 "# parameter 0 (%rdi) - save ctx ptr            \n"
 "# parameter 1 (%rsi) - load ctx ptr            \n"
@@ -311,7 +313,7 @@ __asm__(
 "# parameter 3 (%rcx) - arg passed to           \n"
 "#                      context code            \n"
 "                                               \n"
-"sched_switch_ctx:                              \n"
+"_sched_switch_ctx:                              \n"
 "Lsave_ctx:                                     \n"
 "   lea Lback(%rip), %r8                        \n" 
 "   push %r8                                    \n" 
@@ -344,15 +346,17 @@ __asm__(
 __asm__(
 ".text                                          \n"
 "                                               \n"
+#ifndef __APPLE__
 ".type sched_task_exit_trampoline, @function    \n"
+#endif
 "                                               \n"
 "# (%rax) - low 64 bits of task result          \n"
 "# (%rdx) - high 64 bits of task result         \n"
 "                                               \n"
-"sched_task_exit_trampoline:                    \n"
+"_sched_task_exit_trampoline:                    \n"
 "   movq %rax, %rdi                             \n"
 "   movq %rdx, %rsi                             \n"
-"   jmp sched_task_exit                         \n"
+"   jmp _sched_task_exit                         \n"
 );
 
 #endif

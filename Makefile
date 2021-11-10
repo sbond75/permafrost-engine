@@ -28,28 +28,33 @@ OPENAL_SRC = ./deps/openal-soft
 # Linux
 # ------------------------------------------------------------------------------
 
-LINUX_GLEW_LIB = libGLEW.so.2.2
-LINUX_SDL2_LIB = libSDL2-2.0.so.0
-LINUX_PYTHON_LIB = libpython2.7.so.1.0
-LINUX_PYTHON_TARGET = libpython2.7.so
-LINUX_OPENAL_LIB = libopenal.so.1.21.1
+LINUX_GLEW_LIB = libGLEW.dylib
+LINUX_SDL2_LIB = libSDL2.dylib
+LINUX_PYTHON_LIB = libpython2.7.dylib
+LINUX_PYTHON_TARGET = libpython2.7.dylib
+LINUX_OPENAL_LIB = libopenal.dylib
 
-LINUX_SDL2_CONFIG = --host=x86_64-pc-linux-gnu
-LINUX_PYTHON_CONFIG = --host=x86_64-pc-linux-gnu
+#LINUX_SDL2_CONFIG = --host=x86_64-pc-linux-gnu
+#LINUX_PYTHON_CONFIG = --host=x86_64-pc-linux-gnu
 LINUX_OPENAL_OPTS = "-DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF"
 
 LINUX_CC = gcc
 LINUX_BIN = ./bin/pf
+SDL2_LIB_TEMP=$(SDL2_LIB:lib%=%)
+GLEW_LIB_TEMP=$(GLEW_LIB:lib%=%)
+PYTHON_LIB_TEMP=$(PYTHON_LIB:lib%=%)
+OPENAL_LIB_TEMP=$(OPENAL_LIB:lib%=%)
 LINUX_LDFLAGS = \
-	-l:$(SDL2_LIB) \
-	-l:$(GLEW_LIB) \
-	-l:$(PYTHON_LIB) \
-	-l:$(OPENAL_LIB) \
-	-lGL \
+	-l$(SDL2_LIB_TEMP:.dylib=) \
+	-l$(GLEW_LIB_TEMP:.dylib=) \
+	-l$(PYTHON_LIB_TEMP:.dylib=) \
+	-l$(OPENAL_LIB_TEMP:.dylib=) \
+	 -framework OpenGL \
 	-ldl \
 	-lutil \
-	-Xlinker -export-dynamic \
-	-Xlinker -rpath='$$ORIGIN/../lib'
+	-Xlinker -rpath './lib'
+#	-Xlinker -export-dynamic \
+#-lGL \
 
 LINUX_DEFS = -D_DEFAULT_SOURCE
 
@@ -108,7 +113,7 @@ WARNING_FLAGS = \
 	-Wno-missing-braces \
 	-Wno-unused-function \
 	-Wno-unused-variable \
-	-Werror
+	#-Werror
 
 EXTRA_DEBUG_FLAGS = -g
 EXTRA_RELEASE_FLAGS = -DNDEBUG
@@ -193,6 +198,7 @@ deps: $(DEPS)
 $(BIN): $(PF_OBJS)
 	@mkdir -p ./bin
 	@printf "%-8s %s\n" "[LD]" $@
+	#@echo $(LDFLAGS)
 	@$(CC) $^ -o $(BIN) $(LDFLAGS)
 
 -include $(PF_DEPS)

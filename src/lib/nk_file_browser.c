@@ -51,6 +51,9 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <pwd.h>
+#ifdef __APPLE__
+#include <sys/syslimits.h>
+#endif
 #endif
 
 
