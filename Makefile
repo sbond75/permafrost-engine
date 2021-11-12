@@ -52,7 +52,12 @@ LINUX_LDFLAGS = \
 	 -framework OpenGL \
 	-ldl \
 	-lutil \
-	-Xlinker -rpath './lib'
+	`pkg-config --libs-only-L glew` \
+	-L /nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/lib \
+	`pkg-config --libs-only-L sdl2` \
+	`pkg-config --libs-only-L gl` \
+#	`pkg-config --libs-only-L openal` \
+#	-Xlinker -rpath './lib'
 #	-Xlinker -export-dynamic \
 #-lGL \
 
@@ -125,24 +130,29 @@ ASAN_LDFLAGS = -fsanitize=address -static-libasan
 endif
 
 CFLAGS = \
-	-I$(GLEW_SRC)/include \
-	-I$(SDL2_SRC)/include \
+	`pkg-config --cflags glew` \
+	-I/nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/ -I/nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/include \
+	`pkg-config --cflags sdl2` \
+	`pkg-config --cflags gl` \
 	-I$(PYTHON_SRC)/Include \
-	-I$(OPENAL_SRC)/include \
 	-std=c99 \
-	-O2 \
+	-Og \
 	-fno-strict-aliasing \
 	-fwrapv \
 	$(ASAN_CFLAGS) \
 	$(WARNING_FLAGS) \
 	$(EXTRA_FLAGS)
+#	`pkg-config --cflags openal` \
+	# -I$(GLEW_SRC)/include \
+	# -I$(SDL2_SRC)/include \
+	# -I$(OPENAL_SRC)/include \
 
 LDFLAGS = \
-	-L./lib/ \
 	-lm \
 	-lpthread \
 	$(ASAN_LDFLAGS) \
 	$(PLAT_LDFLAGS)
+#	-L./lib/ \
 
 DEPS = \
 	./lib/$(GLEW_LIB) \

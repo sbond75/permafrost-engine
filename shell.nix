@@ -12,16 +12,36 @@
 }) { }}:
 with pkgs;
 
+let
+  # https://stackoverflow.com/questions/42136197/how-to-override-compile-flags-for-a-single-package-in-nixos
+  optimizeWithFlags = pkg: flags:
+    pkgs.lib.overrideDerivation pkg (old:
+    let
+      newflags = pkgs.lib.foldl' (acc: x: "${acc} ${x}") "" flags;
+      oldflags = if (pkgs.lib.hasAttr "NIX_CFLAGS_COMPILE" old)
+        then "${old.NIX_CFLAGS_COMPILE}"
+        else "";
+    in
+    {
+      NIX_CFLAGS_COMPILE = "${oldflags} ${newflags}";
+    });
+  optimizeForThisHost = pkg:
+    optimizeWithFlags pkg [ "-O3" "-march=native" "-fPIC" ];
+  withDebuggingCompiled = pkg: pkg;
+#    optimizeWithFlags (pkg.overrideAttrs (old: rec { separateDebugInfo = true; dontStrip = true;  preConfigure = #old.preConfigure ++
+ #                                                      ''cmakeFlags="$cmakeFlags -DCMAKE_BUILD_TYPE=Debug"''; })) [ "-DDEBUG" "-O0" "-g3" ];
+in
 mkShell {
   buildInputs = [
-    glew
+    (withDebuggingCompiled libGL)
+    (withDebuggingCompiled glew)
+    (withDebuggingCompiled openal)
+    (withDebuggingCompiled SDL2)
+    pkg-config
   ]; # Note: for macos need this: write this into the path indicated:
   # b) For `nix-env`, `nix-build`, `nix-shell` or any other Nix command you can add
   #   { allowUnsupportedSystem = true; }
   # to ~/.config/nixpkgs/config.nix.
   # ^^^^^^^^^^^^^^^^^^ This doesn't work, use `brew install cartr/qt4/pyqt` instead.
   
-  shellHook = ''
-    export INCLUDE_PATHS_FROM_CFLAGS=$(./makeIncludePathsFromCFlags.sh)
-  '';
 }

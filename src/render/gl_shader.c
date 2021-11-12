@@ -667,6 +667,7 @@ static void shader_install(const struct shader *shader)
 
 bool R_GL_Shader_InitAll(const char *base_path)
 {
+    printf("%lu %lu %lu\n", SDL_ThreadID(), g_main_thread_id, g_render_thread_id);
     ASSERT_IN_RENDER_THREAD();
 
     for(int i = 0; i < ARR_SIZE(s_shaders); i++){

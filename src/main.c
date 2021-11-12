@@ -344,6 +344,8 @@ fail_surface:
     free(image);
 }
 
+static int render(void *data) { while(1) printf("a"); }
+
 static bool engine_init(void)
 {
     g_main_thread_id = SDL_ThreadID();
@@ -410,12 +412,28 @@ static bool engine_init(void)
     engine_set_icon();
     stbi_set_flip_vertically_on_load(true);
 
-    Engine_LoadingScreen();
+    // FIXME: This causes crash when trying to create a gl context for this window, so I commented it out temporarily (maybe related to https://discourse.libsdl.org/t/sdl-createwindowfrom-with-opengl/19737/4 ) :
+    //Engine_LoadingScreen();
 
     if(!rstate_init(&s_rstate)) {
         fprintf(stderr, "Failed to initialize the render sync state.\n");
         goto fail_rstate;
     }
+
+    
+    /* Create the GL context in the main thread and then hand it off to the render thread. 
+     * Certain drivers crap out when trying to make the context in the render thread directly. 
+     */
+    SDL_GLContext s_context = SDL_GL_CreateContext(s_window);
+    if (s_context == NULL) {
+        fprintf(stderr, "Failed to create an OpenGL context: %s\n", SDL_GetError());
+        return NULL;
+    }
+    SDL_GL_MakeCurrent(s_window, NULL);
+
+    unsigned long i = SDL_GetThreadID(SDL_CreateThread(render, "render", &s_rstate));
+    printf("%lu\n", i);
+    
 
     struct render_init_arg rarg = (struct render_init_arg) {
         .in_window = s_window,
@@ -431,6 +449,8 @@ static bool engine_init(void)
         goto fail_rthread;
     }
     g_render_thread_id = SDL_GetThreadID(s_render_thread);
+    printf("%lu\n", g_render_thread_id);
+    assert(g_render_thread_id != 0); // https://wiki.libsdl.org/SDL_GetThreadID : "This thread identifier is as reported by the underlying operating system. If SDL is running on a platform that does not support threads the return value will always be zero."
 
     render_thread_start_work();
     render_thread_wait_done();
@@ -744,6 +764,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 int main(int argc, char **argv)
 {
 #endif
+
+    printf("%d\n", SDL_Init(SDL_INIT_EVERYTHING));
+    unsigned long i = SDL_GetThreadID(SDL_CreateThread(render, "render", NULL));
+    printf("%lu\n", i);
+    return 0;
 
     int ret = EXIT_SUCCESS;
 
