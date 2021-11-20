@@ -667,7 +667,7 @@ static void shader_install(const struct shader *shader)
 
 bool R_GL_Shader_InitAll(const char *base_path)
 {
-    printf("%lu %lu %lu\n", SDL_ThreadID(), g_main_thread_id, g_render_thread_id);
+    printf("R_GL_Shader_InitAll: SDL_ThreadID(): %lu, g_main_thread_id: %lu, g_render_thread_id: %lu\n", SDL_ThreadID(), g_main_thread_id, g_render_thread_id);
     ASSERT_IN_RENDER_THREAD();
 
     for(int i = 0; i < ARR_SIZE(s_shaders); i++){
@@ -703,8 +703,8 @@ bool R_GL_Shader_InitAll(const char *base_path)
             if(geometry)
                 glDeleteShader(geometry);
             glDeleteShader(fragment);
-            fprintf(stderr, "Failed to make shader program %d of %d.\n",
-                i + 1, (int)ARR_SIZE(s_shaders));
+            fprintf(stderr, "Failed to make shader program %d of %d (%s named %s).\n",
+                    i + 1, (int)ARR_SIZE(s_shaders), path, res->name);
             return false;
         }
 

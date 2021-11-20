@@ -51,9 +51,11 @@ out VertexToFrag {
          vec3 normal;
 }to_fragment;
 
-out VertexToGeo {
-    vec3 normal;
-}to_geometry;
+// out VertexToGeo {
+//     vec3 normal;
+// }to_geometry;
+
+out vec3 to_geometry_normal;
 
 /*****************************************************************************/
 /* UNIFORMS                                                                  */
@@ -76,7 +78,8 @@ void main()
     to_fragment.normal = normalize(mat3(model) * in_normal);
 
 // #if USE_GEOMETRY
-//     to_geometry.normal = normalize(mat3(projection * view * model) * in_normal);
+    //to_geometry.normal = normalize(mat3(projection * view * model) * in_normal);
+    to_geometry_normal = normalize(mat3(projection * view * model) * in_normal);
 // #endif
 
     gl_Position = projection * view * model * vec4(in_pos, 1.0);

@@ -41,9 +41,12 @@ layout (triangles) in;
 layout (line_strip) out;
 layout (max_vertices = 6) out;
 
-in VertexToGeo {
-    vec3 normal;
-}from_vertex[];
+// in VertexToGeo {
+//     vec3 normal;
+// }from_vertex[];
+
+#define from_vertex_normals in_pos
+in vec3 from_vertex_normals[];
 
 void main()
 {
@@ -53,7 +56,8 @@ void main()
         gl_Position = gl_in[i].gl_Position;
         EmitVertex();
 
-        gl_Position = gl_in[i].gl_Position + vec4(from_vertex[i].normal, 0.0) * MAGNITUDE;
+        //gl_Position = gl_in[i].gl_Position + vec4(from_vertex[i].normal, 0.0) * MAGNITUDE;
+        gl_Position = gl_in[i].gl_Position + vec4(from_vertex_normals[i], 0.0) * MAGNITUDE;
         EmitVertex();
 
         EndPrimitive();

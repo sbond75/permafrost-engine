@@ -475,6 +475,13 @@ static void render_process_cmds(queue_rcmd_t *cmds)
 
 static int render(void *data)
 {
+    // Hack for macOS //
+    SDL_threadID id = SDL_ThreadID();
+    if (id != g_main_thread_id) {
+        g_render_thread_id = id;
+    }
+    // //
+    
     struct render_sync_state *rstate = data; 
     SDL_Window *window = rstate->arg->in_window; /* cache window ptr */
 
