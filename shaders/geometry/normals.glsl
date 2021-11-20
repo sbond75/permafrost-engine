@@ -41,12 +41,10 @@ layout (triangles) in;
 layout (line_strip) out;
 layout (max_vertices = 6) out;
 
-// in VertexToGeo {
-//     vec3 normal;
-// }from_vertex[];
-
-#define from_vertex_normals in_pos
-in vec3 from_vertex_normals[];
+#define from_vertex to_geometry // This fixes a macOS shader compiler bug where the vertex shader's outputs to the geometry shader must be the same name as the corresponding inputs in the geometry shader ( https://stackoverflow.com/questions/24267069/opengl-mac-osx-vertex-shader-not-linking-to-fragment-shader ).
+in VertexToGeo {
+    vec3 normal;
+}from_vertex[];
 
 void main()
 {
@@ -56,8 +54,7 @@ void main()
         gl_Position = gl_in[i].gl_Position;
         EmitVertex();
 
-        //gl_Position = gl_in[i].gl_Position + vec4(from_vertex[i].normal, 0.0) * MAGNITUDE;
-        gl_Position = gl_in[i].gl_Position + vec4(from_vertex_normals[i], 0.0) * MAGNITUDE;
+        gl_Position = gl_in[i].gl_Position + vec4(from_vertex[i].normal, 0.0) * MAGNITUDE;
         EmitVertex();
 
         EndPrimitive();

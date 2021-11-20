@@ -35,6 +35,8 @@
 
 #version 330 core
 
+#define USE_GEOMETRY 1
+
 layout (location = 0) in vec3 in_pos;
 layout (location = 1) in vec2 in_uv;
 layout (location = 2) in vec3 in_normal;
@@ -51,11 +53,11 @@ out VertexToFrag {
          vec3 normal;
 }to_fragment;
 
-// out VertexToGeo {
-//     vec3 normal;
-// }to_geometry;
+out VertexToGeo {
+    vec3 normal;
+}to_geometry;
 
-out vec3 to_geometry_normal;
+//out vec3 to_geometry_normal;
 
 /*****************************************************************************/
 /* UNIFORMS                                                                  */
@@ -77,10 +79,10 @@ void main()
     to_fragment.world_pos = (model * vec4(in_pos, 1.0)).xyz;
     to_fragment.normal = normalize(mat3(model) * in_normal);
 
-// #if USE_GEOMETRY
-    //to_geometry.normal = normalize(mat3(projection * view * model) * in_normal);
-    to_geometry_normal = normalize(mat3(projection * view * model) * in_normal);
-// #endif
+#if USE_GEOMETRY
+    to_geometry.normal = normalize(mat3(projection * view * model) * in_normal);
+    //to_geometry_normal = normalize(mat3(projection * view * model) * in_normal);
+#endif
 
     gl_Position = projection * view * model * vec4(in_pos, 1.0);
     gl_ClipDistance[0] = dot(model * vec4(in_pos, 1.0), clip_plane0);

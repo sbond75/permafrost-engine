@@ -550,7 +550,7 @@ static bool shader_init(const char *text, GLuint *out, GLint type)
 {
     ASSERT_IN_RENDER_THREAD();
 
-    char info[512];
+    char info[1024];
     GLint success;
 
     *out = glCreateShader(type);
@@ -561,7 +561,7 @@ static bool shader_init(const char *text, GLuint *out, GLint type)
     if(!success) {
 
         glGetShaderInfoLog(*out, sizeof(info), NULL, info);
-        fprintf(stderr, "%s\n", info);
+        fprintf(stderr, "Shader log: %s\n", info);
         return false;
     }
 
@@ -595,7 +595,7 @@ static bool shader_make_prog(const GLuint vertex_shader, const GLuint geo_shader
 {
     ASSERT_IN_RENDER_THREAD();
 
-    char info[512];
+    char info[1024];
     GLint success;
 
     *out = glCreateProgram();
@@ -612,7 +612,7 @@ static bool shader_make_prog(const GLuint vertex_shader, const GLuint geo_shader
     if(!success) {
 
         glGetProgramInfoLog(*out, sizeof(info), NULL, info);
-        fprintf(stderr, "%s\n", info);
+        fprintf(stderr, "Shader log: %s\n", info);
         return false;
     }
 
@@ -703,8 +703,8 @@ bool R_GL_Shader_InitAll(const char *base_path)
             if(geometry)
                 glDeleteShader(geometry);
             glDeleteShader(fragment);
-            fprintf(stderr, "Failed to make shader program %d of %d (%s named %s).\n",
-                    i + 1, (int)ARR_SIZE(s_shaders), path, res->name);
+            fprintf(stderr, "Failed to make shader program %d of %d (%s, %s, %s named %s).\n",
+                    i + 1, (int)ARR_SIZE(s_shaders), res->vertex_path, res->frag_path, res->geo_path, res->name);
             return false;
         }
 
