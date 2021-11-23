@@ -294,9 +294,9 @@ __asm__(
 "                                               \n"
 "# (%rax) - pointer to 128 bits of task result  \n"
 "                                               \n"
-"_sched_task_exit_trampoline:                    \n"
+"sched_task_exit_trampoline:                    \n"
 "   mov %rax, %rcx                              \n"
-"   jmp _sched_task_exit                         \n"
+"   jmp sched_task_exit                         \n"
 );
 
 #else
@@ -314,7 +314,11 @@ __asm__(
 "# parameter 3 (%rcx) - arg passed to           \n"
 "#                      context code            \n"
 "                                               \n"
+#ifdef __APPLE__ // Symbol names start with underscores in macOS for some reason.
 "_sched_switch_ctx:                              \n"
+#else
+"sched_switch_ctx:                              \n"
+#endif
 "Lsave_ctx:                                     \n"
 "   lea Lback(%rip), %r8                        \n" 
 "   push %r8                                    \n" 
@@ -354,10 +358,18 @@ __asm__(
 "# (%rax) - low 64 bits of task result          \n"
 "# (%rdx) - high 64 bits of task result         \n"
 "                                               \n"
+#ifdef __APPLE__ // Symbol names start with underscores in macOS for some reason.
 "_sched_task_exit_trampoline:                    \n"
+#else
+"sched_task_exit_trampoline:                    \n"
+#endif
 "   movq %rax, %rdi                             \n"
 "   movq %rdx, %rsi                             \n"
+#ifdef __APPLE__ // Symbol names start with underscores in macOS for some reason.
 "   jmp _sched_task_exit                         \n"
+#else
+"   jmp sched_task_exit                         \n"
+#endif
 );
 
 #endif
