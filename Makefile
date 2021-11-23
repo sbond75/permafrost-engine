@@ -142,8 +142,8 @@ CFLAGS = \
 	-fwrapv \
 	$(ASAN_CFLAGS) \
 	$(WARNING_FLAGS) \
-	$(EXTRA_FLAGS)
-	#-I$(PYTHON_SRC)/Include \
+	$(EXTRA_FLAGS) \
+	-I$(PYTHON_SRC)/Include
 	#`pkg-config --cflags openal` \
 	# -I$(GLEW_SRC)/include \
 	# -I$(SDL2_SRC)/include \
