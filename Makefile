@@ -45,10 +45,6 @@ GLEW_LIB_TEMP=$(GLEW_LIB:lib%=%)
 PYTHON_LIB_TEMP=$(PYTHON_LIB:lib%=%)
 OPENAL_LIB_TEMP=$(OPENAL_LIB:lib%=%)
 LINUX_LDFLAGS = \
-	-l$(SDL2_LIB_TEMP:.dylib=) \
-	-l$(GLEW_LIB_TEMP:.dylib=) \
-	-l$(PYTHON_LIB_TEMP:.dylib=) \
-	-l$(OPENAL_LIB_TEMP:.dylib=) \
 	 -framework OpenGL \
 	-ldl \
 	-lutil \
@@ -56,6 +52,11 @@ LINUX_LDFLAGS = \
 	-L /nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/lib \
 	`pkg-config --libs-only-L sdl2` \
 	`pkg-config --libs-only-L gl` \
+	`pkg-config --libs-only-L python2`
+	# -l$(SDL2_LIB_TEMP:.dylib=) \
+	# -l$(GLEW_LIB_TEMP:.dylib=) \
+	# -l$(PYTHON_LIB_TEMP:.dylib=) \
+	# -l$(OPENAL_LIB_TEMP:.dylib=) \
 #	`pkg-config --libs-only-L openal` \
 #	-Xlinker -rpath './lib'
 #	-Xlinker -export-dynamic \
@@ -134,7 +135,7 @@ CFLAGS = \
 	-I/nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/ -I/nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/include \
 	`pkg-config --cflags sdl2` \
 	`pkg-config --cflags gl` \
-	-I$(PYTHON_SRC)/Include \
+	`pkg-config --cflags python2` \
 	-std=c99 \
 	-Og \
 	-fno-strict-aliasing \
@@ -142,7 +143,8 @@ CFLAGS = \
 	$(ASAN_CFLAGS) \
 	$(WARNING_FLAGS) \
 	$(EXTRA_FLAGS)
-#	`pkg-config --cflags openal` \
+	#-I$(PYTHON_SRC)/Include \
+	#`pkg-config --cflags openal` \
 	# -I$(GLEW_SRC)/include \
 	# -I$(SDL2_SRC)/include \
 	# -I$(OPENAL_SRC)/include \
