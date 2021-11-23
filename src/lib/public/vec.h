@@ -132,7 +132,7 @@
     scope bool vec_##name##_push(vec(name) *vec, type in)                                       \
     {                                                                                           \
         if(vec->size == vec->capacity                                                           \
-        && !vec_##name##_resize(vec, (vec->size == 0 ? 16 : vec->size * 2) * sizeof(type)))     \
+        && !vec_##name##_resize(vec, (vec->size == 0 ? 16 : vec->size * 2)))                    \
             return false;                                                                       \
                                                                                                 \
         vec->array[vec->size++] = in;                                                           \
