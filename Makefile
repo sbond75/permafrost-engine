@@ -46,6 +46,7 @@ PYTHON_LIB_TEMP=$(PYTHON_LIB:lib%=%)
 OPENAL_LIB_TEMP=$(OPENAL_LIB:lib%=%)
 LINUX_LDFLAGS = \
 	-lpython2.7 \
+	-lopenal \
 	-ldl \
 	-lutil \
 	`pkg-config --libs glew` \
