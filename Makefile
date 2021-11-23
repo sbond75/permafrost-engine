@@ -45,7 +45,6 @@ GLEW_LIB_TEMP=$(GLEW_LIB:lib%=%)
 PYTHON_LIB_TEMP=$(PYTHON_LIB:lib%=%)
 OPENAL_LIB_TEMP=$(OPENAL_LIB:lib%=%)
 LINUX_LDFLAGS = \
-	 -framework OpenGL \
 	-ldl \
 	-lutil \
 	`pkg-config --libs-only-L glew` \
@@ -61,6 +60,13 @@ LINUX_LDFLAGS = \
 #	-Xlinker -rpath './lib'
 #	-Xlinker -export-dynamic \
 #-lGL \
+
+OS := $(shell uname -s)
+ifeq ($(OS),Darwin)
+    LINUX_LDFLAGS += \
+	 -framework OpenGL
+endif
+
 
 LINUX_DEFS = -D_DEFAULT_SOURCE
 
