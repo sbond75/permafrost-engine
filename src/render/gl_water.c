@@ -563,14 +563,14 @@ void R_GL_DrawWater(const struct render_input *in, const bool *refraction, const
     struct water_gl_state state;
     save_gl_state(&state);
 
-    int viewport[4]; (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
+    //int viewport[4]; (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
     
     int w = wbuff_width();
     int h = wbuff_height(w);
     
-    (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
-    (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
-    (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
+//    (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
+//    (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
+//    (void)glGetIntegerv(0x0BA2, viewport); printf("%d %d %d %d\n",viewport[0],viewport[1],viewport[2],viewport[3]);
 
     GLuint refract_tex = make_new_tex(w, h);
     assert(refract_tex > 0);

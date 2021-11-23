@@ -1357,10 +1357,10 @@ static void pre_build_index(void)
         if (mod == NULL) {
             // https://stackoverflow.com/questions/27469454/pyimport-import-fails-returns-null/27469748
             PyErr_Print();
-            //exit(1);
-            continue;
+            exit(1);
+            //continue;
         }
-        printf("%jd\n", mod->ob_refcnt); // https://stackoverflow.com/questions/24844970/how-to-print-types-of-unknown-size-like-ino-t : "The j length modifier" :        "Specifies that a following d, i, o, u, x, or X conversion specifier applies to an intmax_t or uintmax_t argument; or that a following n conversion specifier applies to a pointer to an intmax_t argument."
+        //printf("%jd\n", mod->ob_refcnt); // https://stackoverflow.com/questions/24844970/how-to-print-types-of-unknown-size-like-ino-t : "The j length modifier" :        "Specifies that a following d, i, o, u, x, or X conversion specifier applies to an intmax_t or uintmax_t argument; or that a following n conversion specifier applies to a pointer to an intmax_t argument."
         assert(mod && mod->ob_refcnt == 2);
         Py_DECREF(mod); /* remains cached in sys.modules */
     }

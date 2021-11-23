@@ -382,6 +382,7 @@
 		302379C92749A1CA00C5F384 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Config.xcconfig; path = ../Config.xcconfig; sourceTree = "<group>"; };
 		302379CB2749A24A00C5F384 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		302379D32749E8DE00C5F384 /* commonXcode.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = commonXcode.sh; path = ../commonXcode.sh; sourceTree = "<group>"; };
+		302379D7274C9F4800C5F384 /* glHacks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = glHacks.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -457,6 +458,7 @@
 				3023790D2749A00E00C5F384 /* perf.h */,
 				3023790E2749A00E00C5F384 /* cursor.c */,
 				3023790F2749A00E00C5F384 /* scene.h */,
+				302379D7274C9F4800C5F384 /* glHacks.h */,
 			);
 			name = src;
 			path = ../src;

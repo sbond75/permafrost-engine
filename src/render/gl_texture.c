@@ -278,9 +278,9 @@ void R_GL_Texture_Bind(const struct texture *text, GLuint shader_prog)
     ASSERT_IN_RENDER_THREAD();
 
     glActiveTexture(text->tunit);
-    printf("%ju\n", glGetError());
-    glActiveTexture(text->tunit); // Works the second time only!?
-    printf("%ju\n", glGetError());
+    //printf("%ju\n", glGetError());
+    //glActiveTexture(text->tunit); // Works the second time only!?
+    //printf("%ju\n", glGetError());
     GL_ASSERT_OK();
     glBindTexture(GL_TEXTURE_2D, text->id);
     GL_ASSERT_OK();

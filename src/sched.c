@@ -513,7 +513,7 @@ static void sched_set_thread_tid(threadID_t id, uint32_t tid)
 
 static uint32_t sched_curr_thread_tid(void)
 {
-    printf("thisThreadID(): %ju\n", thisThreadID()); fflush(stdout);
+    //printf("thisThreadID(): %ju\n", thisThreadID()); fflush(stdout);
     uint64_t key = thread_id_to_key(thisThreadID());
     khiter_t k = kh_get(tid, s_thread_tid_map, key);
     assert(k != kh_end(s_thread_tid_map));

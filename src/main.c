@@ -142,8 +142,19 @@ static void process_sdl_events(void)
                 // Update stored size
                 int out_w, out_h;
                 SDL_GL_GetDrawableSize(s_window, &out_w, &out_h);
+                
+//                SDL_Rect rect;
+//                SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(SDL_GetWindowFromID(event.window.windowID)), &rect);
+//                if (event.window.data1 > rect.w) {
+//                    event.window.data1 = rect.w;
+//                }
+//                if (event.window.data2 > rect.h) {
+//                    event.window.data2 = rect.h;
+//                }
+                
                 s_window_width = event.window.data1;
                 s_window_height = event.window.data2;
+                
                 printf("SDL_WINDOWEVENT_SIZE_CHANGED: SDL_GL_GetDrawableSize(): %d, %d; event.window: %d, %d\n", out_w, out_h, s_window_width, s_window_height);
             }
             break;
@@ -233,6 +244,7 @@ static void render_thread_start_work(void)
     SDL_UnlockMutex(s_rstate.sq_lock);
 }
 
+#include "glHacks.h"
 void render_thread_wait_done(void)
 {
     PERF_ENTER();
@@ -241,6 +253,16 @@ void render_thread_wait_done(void)
     while(!s_rstate.done)
         SDL_CondWait(s_rstate.done_cond, s_rstate.done_lock);
     s_rstate.done = false;
+    #ifdef __APPLE__
+    if (s_rstate.swap_buffers) {
+        // Finish the update part
+        SDLOpenGLContext* nscontext = (SDLOpenGLContext*)SDL_GL_GetCurrentContext();
+        CFStringRef aCFString;
+        aCFString = CFStringCreateWithCString(NULL, "update", kCFStringEncodingUTF8);
+        ((void(*)(void*, SEL))objc_msgSend)(nscontext, NSSelectorFromString(aCFString)); // Call the `update` method on the current SDLOpenGLContext object (which inherits from NSOpenGLContext : https://developer.apple.com/documentation/appkit/nsopenglcontext/1436135-update?language=objc )
+        CFRelease(aCFString);
+    }
+    #endif
     SDL_UnlockMutex(s_rstate.done_lock);
 
     PERF_RETURN_VOID();
@@ -411,10 +433,21 @@ static bool engine_init(void)
 
     char appname[64] = "Permafrost Engine";
     Engine_GetArg("appname", sizeof(appname), appname);
+    #ifdef __APPLE__
+    SDL_Rect rect;
+    SDL_GetDisplayUsableBounds(0, &rect);
+    res[0] = rect.w;
+    res[1] = rect.h;
+    #endif
     s_window = SDL_CreateWindow(
         appname,
-        SDL_WINDOWPOS_UNDEFINED, 
+        #ifdef __APPLE__
+        rect.x,
+        rect.y,
+        #else
         SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        #endif
         res[0], 
         res[1], 
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | wf | extra_flags);
@@ -670,7 +703,7 @@ int Engine_SetRes(int w, int h)
         .driverdata = NULL,
     };
 
-    SDL_SetWindowSize(s_window, w, h);
+//    SDL_SetWindowSize(s_window, w, h);
     SDL_SetWindowPosition(s_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     return SDL_SetWindowDisplayMode(s_window, &dm);
 }
