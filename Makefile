@@ -48,11 +48,11 @@ LINUX_LDFLAGS = \
 	-lpython2.7 \
 	-ldl \
 	-lutil \
-	`pkg-config --libs-only-L glew` \
+	`pkg-config --libs glew` \
 	-L /nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/lib \
-	`pkg-config --libs-only-L sdl2` \
-	`pkg-config --libs-only-L gl` \
-	`pkg-config --libs-only-L python2`
+	`pkg-config --libs sdl2` \
+	`pkg-config --libs gl` \
+	`pkg-config --libs python2`
 	# -l$(SDL2_LIB_TEMP:.dylib=) \
 	# -l$(GLEW_LIB_TEMP:.dylib=) \
 	# -l$(PYTHON_LIB_TEMP:.dylib=) \
