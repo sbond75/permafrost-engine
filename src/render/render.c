@@ -590,6 +590,14 @@ void Replace(Class c, SEL orig, SEL new)
     else
         method_setImplementation(origMethod, method_getImplementation(newMethod));
 }
+void Replace_withImp(Class c, SEL orig, IMP new, const char* newImpTypeEncoding)
+{
+    Method origMethod = class_getInstanceMethod(c, orig);
+    if(origMethod == NULL)
+        class_addMethod(c, orig, new, newImpTypeEncoding);
+    else
+        method_setImplementation(origMethod, new);
+}
 
 #include <CoreFoundation/CoreFoundation.h> // "CFString is “toll-free bridged” with its Cocoa Foundation counterpart, NSString. This means that the Core Foundation type is interchangeable in function or method calls with the bridged Foundation object. Therefore, in a method where you see an NSString * parameter, you can pass in a CFStringRef, and in a function where you see a CFStringRef parameter, you can pass in an NSString instance. This also applies to concrete subclasses of NSString. See Toll-Free Bridged Types for more information on toll-free bridging." ( https://developer.apple.com/documentation/corefoundation/cfstring?language=objc )
 
@@ -600,6 +608,45 @@ Class NSClassFromString(CFStringRef /*NSString **/aClassName);
 SEL NSSelectorFromString(CFStringRef /*NSString **/aSelectorName);
 
 // //
+
+// https://www.mikeash.com/pyblog/objc_msgsends-new-prototype.html
+void newExplicitUpdate(id self, SEL _cmd) {
+    // Don't run on a dispatch queue! Original code from SDL/src/video/cocoa/SDL_cocoaopengl.m :
+    /*
+     - (void)explicitUpdate
+     {
+         if ([NSThread isMainThread]) {
+             [super update];
+         } else {
+             dispatch_sync(dispatch_get_main_queue(), ^{ [super update]; });
+         }
+     }
+     */
+    
+    CFStringRef aCFString;
+    aCFString = CFStringCreateWithCString(NULL, "SDLOpenGLContext", kCFStringEncodingUTF8);
+    CFStringRef aCFString2;
+    aCFString2 = CFStringCreateWithCString(NULL, "update", kCFStringEncodingUTF8);
+    Class cls = NSClassFromString(aCFString);
+    
+    // https://www.programmerall.com/article/7493171948/
+    Class superCls = class_getSuperclass(cls);
+    // See /usr/include/objc/message.h :
+    struct objc_super obj_super_class = {
+        .receiver = self,
+        #if !defined(__cplusplus)  &&  !__OBJC2__
+            .class = superCls
+        #else
+            .super_class = superCls
+        #endif
+        
+    };
+    
+    ((void (*)(void*, SEL))objc_msgSendSuper)(&obj_super_class, NSSelectorFromString(aCFString2));
+    
+    CFRelease(aCFString);
+    CFRelease(aCFString2);
+}
 #endif
 static int render(void *data)
 {
@@ -609,17 +656,16 @@ static int render(void *data)
         g_render_thread_id = id;
     }
     
+#ifdef __APPLE__
     // Another hack:
     CFStringRef aCFString;
     aCFString = CFStringCreateWithCString(NULL, "SDLOpenGLContext", kCFStringEncodingUTF8);
     CFStringRef aCFString2;
-    aCFString2 = CFStringCreateWithCString(NULL, "updateIfNeeded", kCFStringEncodingUTF8);
-    CFStringRef aCFString3;
-    aCFString3 = CFStringCreateWithCString(NULL, "explicitUpdate", kCFStringEncodingUTF8);
-    Replace(NSClassFromString(aCFString), NSSelectorFromString(aCFString2), NSSelectorFromString(aCFString3)); // Change the method `updateIfNeeded` on class `SDLOpenGLContext` to be simply a call to its `explicitUpdate` method.
+    aCFString2 = CFStringCreateWithCString(NULL, "explicitUpdate", kCFStringEncodingUTF8);
+    Replace_withImp(NSClassFromString(aCFString), NSSelectorFromString(aCFString2), (void(*)(void))newExplicitUpdate, "v@"); // Change the method `explicitUpdate` on class `SDLOpenGLContext` to be a call to our overriden one.
     CFRelease(aCFString);
     CFRelease(aCFString2);
-    CFRelease(aCFString3);
+#endif
     // //
     
     // https://wiki.libsdl.org/SDL_GetVersion //
