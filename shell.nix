@@ -34,7 +34,7 @@ let
 in
 mkShell {
   buildInputs = [
-    frameworks.Carbon
+    (lib.optional (stdenv.hostPlatform.isMacOS) frameworks.Carbon)
     (withDebuggingCompiled libGL)
     (withDebuggingCompiled glew)
     (withDebuggingCompiled openal)
