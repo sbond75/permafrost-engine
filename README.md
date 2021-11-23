@@ -1,3 +1,5 @@
+This project is based on [https://github.com/eduard-permyakov/permafrost-engine](https://github.com/eduard-permyakov/permafrost-engine). [Build instructions](## Building Permafrost Engine ##) have been updated to reflect the modifications made.
+
 ## ![Logo](docs/images/logo.png) ##
 
 Permafrost Engine is an OpenGL 3.3 Real Time Strategy game engine written in C. 
@@ -80,12 +82,11 @@ Python is built with a subset of the default modules and packaged with a trimmed
 
 ## Building Permafrost Engine ##
 
-#### For Linux ####
+#### For Linux and macOS ####
 
-1. `git clone https://github.com/eduard-permyakov/permafrost-engine.git`
+1. `git clone --recursive https://github.com/sbond75/permafrost-engine.git`
 2. `cd permafrost-engine`
-3. `make deps` (to build the shared library dependencies to `./lib`)
-4. `make pf`
+3. `make pf`
 
 Now you can invoke `make run` to launch the demo or `make run_editor` to launch the map editor.
 Optionally, invoke `make launchers` to create the `./demo` and `./editor` binaries which don't 

@@ -43,8 +43,8 @@
 
 static inline void GL_ASSERT_OK() {
     // https://stackoverflow.com/questions/7159348/disable-single-warning-error
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wformat"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat"
     GLenum error = glGetError();
     if(error != GL_NO_ERROR) {
         fprintf(stderr, "%s:%d OpenGL error: 0x%x (%ju): %s\n",
@@ -52,7 +52,7 @@ static inline void GL_ASSERT_OK() {
         fflush(stderr);
     }
     //assert(error == GL_NO_ERROR);
-    #pragma clang diagnostic pop
+    #pragma GCC diagnostic pop
 }
 
 #else
