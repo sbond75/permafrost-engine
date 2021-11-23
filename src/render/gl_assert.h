@@ -41,15 +41,19 @@
 
 #ifndef NDEBUG
 
-#define GL_ASSERT_OK()                                  \
-    do {                                                \
-        GLenum error = glGetError();                    \
-        if(error != GL_NO_ERROR)                        \
-            fprintf(stderr, "%s:%d OpenGL error: 0x%x (%ju): %s\n", \
-            __FILE__, __LINE__, error, error, gluErrorString(error));                 \
-            fflush(stderr);                             \
-        assert(error == GL_NO_ERROR);                   \
-    }while(0)
+static inline void GL_ASSERT_OK() {
+    // https://stackoverflow.com/questions/7159348/disable-single-warning-error
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat"
+    GLenum error = glGetError();
+    if(error != GL_NO_ERROR) {
+        fprintf(stderr, "%s:%d OpenGL error: 0x%x (%ju): %s\n",
+        __FILE__, __LINE__, error, error, gluErrorString(error));
+        fflush(stderr);
+    }
+    assert(error == GL_NO_ERROR);
+    #pragma clang diagnostic pop
+}
 
 #else
 

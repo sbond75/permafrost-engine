@@ -14,7 +14,8 @@
 #include <errno.h>
 
 int main(int argc, char * argv[]) {
-    char* args[] = {argv[0], ".", "./scripts/editor/main.py", NULL};
+    //char* args[] = {argv[0], ".", "./scripts/editor/main.py", NULL};
+    char* args[] = {argv[0], ".", "./scripts/pong.py", NULL};
     int numArgs = sizeof(args)/sizeof(args[0]) - 1;
 
     // https://www.educative.io/edpresso/two-dimensional-arrays-in-c
