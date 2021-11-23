@@ -1,0 +1,10 @@
+HEADER_SEARCH_PATHS=/nix/store/iwfkas9dsakc7cm6fhlaigjy46j71476-mesa-21.1.7-dev/include /nix/store/hl2lrbyr9r3v06c4cywsfkl079vjr5c8-glew-2.2.0-dev/include /nix/store/j98g4cfv1zphjrhya9haxcps0xdyfz1n-SDL2-2.0.14-dev/include/SDL2 /nix/store/qiyhc40sa7b0vp3pbnw7h7mk24zs0bxx-python-2.7.18/include/python2.7 /nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/ /nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/include "/Volumes/MyTestVolume/MiscRepos/GameEngines/permafrost-engine/permafrost-engine/../deps/Python/Include"
+ 
+//OTHER_LDFLAGS = -lm -lpthread -L/nix/store/kvjzrlgd89hqi1lzqsjrxnlgabla7cyb-mesa-21.1.7/lib -L/nix/store/ajwxvc7p8n0gsi19pwvgm9xdlr4sznjf-glew-2.2.0/lib -L/nix/store/l3xw3fsmw5q4iin6v0g07mvf9vb5zarr-SDL2-2.0.14/lib -L/nix/store/qiyhc40sa7b0vp3pbnw7h7mk24zs0bxx-python-2.7.18/lib -lGLEW -framework OpenGL -lSDL2 -lGL -lpython2.7 -L"\"/Volumes/MyTestVolume/MiscRepos/GameEngines/permafrost-engine/permafrost-engine/../deps/Python/build2\"" -lpython2.7 -L /nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/lib -lopenal
+
+// TODO: ifndef NDEBUG the  in here:
+OTHER_LDFLAGS = -lm -lpthread -L/nix/store/kvjzrlgd89hqi1lzqsjrxnlgabla7cyb-mesa-21.1.7/lib -L/nix/store/ajwxvc7p8n0gsi19pwvgm9xdlr4sznjf-glew-2.2.0/lib -L/nix/store/l3xw3fsmw5q4iin6v0g07mvf9vb5zarr-SDL2-2.0.14/lib -L/nix/store/qiyhc40sa7b0vp3pbnw7h7mk24zs0bxx-python-2.7.18/lib -lGLEW -framework OpenGL -lSDL2 -lGL -lpython2.7 -lpython2.7 -L /nix/store/mssab7csfg19054l2iddjab7q80nw48y-openal-soft-1.19.1/lib -lopenal -framework CoreFoundation -framework Foundation
+
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) EXTERNAL_DRIVER=1 GL_SILENCE_DEPRECATION=1
+
+//OTHER_CFLAGS =  -framework CoreFoundation

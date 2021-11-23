@@ -81,21 +81,31 @@ static bool texture_gl_init(const char *path, GLuint *out)
         goto fail_load;
 
     glActiveTexture(GL_TEXTURE0);
+    GL_ASSERT_OK();
     glGenTextures(1, &ret);
+    GL_ASSERT_OK();
     glBindTexture(GL_TEXTURE_2D, ret);
+    GL_ASSERT_OK();
 
     if(nr_channels != 3 && nr_channels != 4)
         goto fail_format;
 
     GLint format = (nr_channels == 3) ? GL_RGB : GL_RGBA;
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    GL_ASSERT_OK();
     glGenerateMipmap(GL_TEXTURE_2D);
+    GL_ASSERT_OK();
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    GL_ASSERT_OK();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GL_ASSERT_OK();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    GL_ASSERT_OK();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GL_ASSERT_OK();
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, LOD_BIAS);
+    GL_ASSERT_OK();
 
     stbi_image_free(data);
     *out = ret;
@@ -268,7 +278,12 @@ void R_GL_Texture_Bind(const struct texture *text, GLuint shader_prog)
     ASSERT_IN_RENDER_THREAD();
 
     glActiveTexture(text->tunit);
+    printf("%ju\n", glGetError());
+    glActiveTexture(text->tunit); // Works the second time only!?
+    printf("%ju\n", glGetError());
+    GL_ASSERT_OK();
     glBindTexture(GL_TEXTURE_2D, text->id);
+    GL_ASSERT_OK();
     GLint sampler = text->tunit - GL_TEXTURE0;
 
     const char *uname_table[] = {

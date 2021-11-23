@@ -129,11 +129,14 @@ static void exec_draw_commands(const struct nk_draw_list *dl, GLuint shader_prog
             h - (GLint)((cmd->clip_rect.y + cmd->clip_rect.h) / (float)curr_vres.y * h),
             (GLint)(cmd->clip_rect.w / (float)curr_vres.x * w),
             (GLint)(cmd->clip_rect.h / (float)curr_vres.y * h));
+        GL_ASSERT_OK();
         glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
+        GL_ASSERT_OK();
 
         offset += cmd->elem_count;
     }
-
+    
+    GL_ASSERT_OK();
     GL_PERF_RETURN_VOID();
 }
 
@@ -203,11 +206,17 @@ void R_GL_UI_Render(const struct nk_draw_list *dl)
 
     /* setup global state */
     glEnable(GL_BLEND);
+    GL_ASSERT_OK();
     glBlendEquation(GL_FUNC_ADD);
+    GL_ASSERT_OK();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    GL_ASSERT_OK();
     glDisable(GL_CULL_FACE);
+    GL_ASSERT_OK();
     glDisable(GL_DEPTH_TEST);
+    GL_ASSERT_OK();
     glEnable(GL_SCISSOR_TEST);
+    GL_ASSERT_OK();
 
     int w, h, x = 0, y = 0;
     Engine_WinDrawableSize(&w, &h);
@@ -220,20 +229,29 @@ void R_GL_UI_Render(const struct nk_draw_list *dl)
 
     /* setup buffers */
     glBindVertexArray(s_ctx.VAO);
+    GL_ASSERT_OK();
     glBindBuffer(GL_ARRAY_BUFFER, s_ctx.VBO);
+    GL_ASSERT_OK();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ctx.EBO);
+    GL_ASSERT_OK();
 
     glBufferData(GL_ARRAY_BUFFER, dl->vertices->memory.size, dl->vertices->memory.ptr, GL_STREAM_DRAW);
+    GL_ASSERT_OK();
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, dl->elements->memory.size, dl->elements->memory.ptr, GL_STREAM_DRAW);
+    GL_ASSERT_OK();
 
     /* iterate over and execute each draw command */
     exec_draw_commands(dl, shader_prog);
 
     /* cleanup state */
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    GL_ASSERT_OK();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    GL_ASSERT_OK();
     glBindVertexArray(0);
+    GL_ASSERT_OK();
     glDisable(GL_BLEND);
+    GL_ASSERT_OK();
     glDisable(GL_SCISSOR_TEST);
 
     GL_ASSERT_OK();

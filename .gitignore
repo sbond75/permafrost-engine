@@ -26,3 +26,4 @@ deps/GLEW/tmp/
 deps/SDL2/build/
 
 /lib.disabled/
+xcuserdata

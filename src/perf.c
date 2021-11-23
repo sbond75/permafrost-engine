@@ -109,6 +109,12 @@ static unsigned         s_last_frames_ms[NFRAMES_LOGGED];
 /* STATIC FUNCTIONS                                                          */
 /*****************************************************************************/
 
+#ifdef __APPLE__
+static uint64_t tid_to_key(threadID_t tid)
+{
+    return (uint64_t)tid;
+}
+#else
 static uint64_t tid_to_key(SDL_threadID tid)
 {
     union{
@@ -118,6 +124,7 @@ static uint64_t tid_to_key(SDL_threadID tid)
     ret.as_tid = tid;
     return ret.as_u64;
 }
+#endif
 
 static uint32_t name_id_get(const char *name, struct perf_state *ps)
 {
@@ -253,7 +260,7 @@ void Perf_Shutdown(void)
     kh_destroy(pstate, s_thread_state_table);
 }
 
-bool Perf_RegisterThread(SDL_threadID tid, const char *name)
+bool Perf_RegisterThread(threadID_t tid, const char *name)
 {
     ASSERT_IN_MAIN_THREAD();
 
@@ -275,7 +282,7 @@ bool Perf_RegisterThread(SDL_threadID tid, const char *name)
 
 void Perf_Push(const char *name)
 {
-    SDL_threadID tid = SDL_ThreadID();
+    threadID_t tid = thisThreadID();
     khiter_t k = kh_get(pstate, s_thread_state_table, tid_to_key(tid));
     if(k == kh_end(s_thread_state_table))
         return;
@@ -296,7 +303,7 @@ void Perf_Push(const char *name)
 
 void Perf_Pop(void)
 {
-    SDL_threadID tid = SDL_ThreadID();
+    threadID_t tid = thisThreadID();
     khiter_t k = kh_get(pstate, s_thread_state_table, tid_to_key(tid));
     if(k == kh_end(s_thread_state_table))
         return;

@@ -3015,8 +3015,14 @@ PyMODINIT_FUNC initpf(void)
 {
     PyObject *module;
     module = Py_InitModule("pf", pf_module_methods);
-    if(!module)
+    if (!module) {
+        printf("Error initializing Python module\n");
+        if(PyErr_Occurred()) {
+            S_ShowLastError();
+        }
+        exit(1);
         return;
+    }
 
     S_Entity_PyRegister(module);
     S_UI_PyRegister(module);
@@ -3036,7 +3042,7 @@ bool S_Init(const char *progname, const char *base_path, struct nk_context *ctx)
     static char script_dir[512];
     pf_snprintf(script_dir, sizeof(script_dir), "%s/%s", g_basepath, "scripts"); 
 
-    Py_SetPythonHome(script_dir); /* caches passed in pointer */
+    //Py_SetPythonHome(script_dir); /* caches passed in pointer */
     Py_InitializeEx(0);
 
     if(!S_UI_Init(ctx))

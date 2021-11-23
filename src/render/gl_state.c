@@ -132,6 +132,7 @@ static bool uval_equal(const struct uval *a, const struct uval *b)
 static void uval_install(GLuint shader_prog, const char *uname, const struct uval *uv)
 {
     GLuint loc = glGetUniformLocation(shader_prog, uname);
+    GL_ASSERT_OK();
 
     switch(uv->type) {
     case UTYPE_FLOAT:
@@ -167,11 +168,13 @@ static void uval_install(GLuint shader_prog, const char *uname, const struct uva
     default:
         assert(0);
     }
+    GL_ASSERT_OK();
 }
 
 static void uval_array_install(GLuint shader_prog, const char *uname, const struct arrval *av)
 {
     GLuint loc = glGetUniformLocation(shader_prog, uname);
+    GL_ASSERT_OK();
     void *data = mp_buff_entry(&s_buff_pool, av->data)->raw;
 
     switch(av->itemtype) {
@@ -208,6 +211,7 @@ static void uval_array_install(GLuint shader_prog, const char *uname, const stru
     default:
         assert(0);
     }
+    GL_ASSERT_OK();
 }
 
 static void uval_composite_install(GLuint shader_prog, const char *uname, const struct compval *cv)
@@ -223,6 +227,7 @@ static void uval_composite_install(GLuint shader_prog, const char *uname, const 
             char uname_full[256];
             pf_snprintf(uname_full, sizeof(uname_full), "%s[%d].%s", uname, i, curr->name);
             GLuint loc = glGetUniformLocation(shader_prog, uname_full);
+            GL_ASSERT_OK();
 
             switch(curr->type) {
             case UTYPE_FLOAT:
@@ -258,6 +263,7 @@ static void uval_composite_install(GLuint shader_prog, const char *uname, const 
             default:
                 assert(0);
             }
+            GL_ASSERT_OK();
             curr++;
         }
         data += cv->itemsize;

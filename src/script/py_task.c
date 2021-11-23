@@ -319,6 +319,7 @@ static PyObject *pytask_resume_request(PyTaskObject *self)
 
 static int pytask_tracefunc(PyTaskObject *self, PyFrameObject *frame, int what, PyObject *arg)
 {
+    #define PyTrace_OPCODE 7
     if(what == PyTrace_OPCODE) {
         assert(frame->f_stacktop);
         size_t stack_depth = (size_t)(frame->f_stacktop - frame->f_valuestack);

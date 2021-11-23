@@ -40,18 +40,67 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#ifdef __APPLE__
+#include <pthread.h>
+static inline uint64_t thisThreadID() {
+    uint64_t thread_id;
+    // https://www.manpagez.com/man/3/pthread_threadid_np/ : for macOS
+    pthread_threadid_np(pthread_self(), &thread_id);
+    return thread_id;
+}
+// Based on https://github.com/libsdl-org/SDL : SDL/src/thread/SDL_thread_c.h
+typedef pthread_t SYS_ThreadHandle; // SDL/src/thread/pthread/SDL_systhread_c.h
+#define ERR_MAX_STRLEN  128 // SDL/src/SDL_error_c.h
+typedef struct SDL_error // SDL/src/SDL_error_c.h
+{
+    int error; /* This is a numeric value corresponding to the current error */
+    char str[ERR_MAX_STRLEN];
+} SDL_error;
+struct SDL_Thread_impl
+{
+    SDL_threadID threadid;
+    SYS_ThreadHandle handle;
+    int status;
+    SDL_atomic_t state;  /* SDL_THREAD_STATE_* */
+    SDL_error errbuf;
+    char *name;
+    size_t stacksize;  /* 0 for default, >0 for user-specified stack size. */
+    int (SDLCALL * userfunc) (void *);
+    void *userdata;
+    void *data;
+    void *endfunc;  /* only used on some platforms. */
+};
+static inline uint64_t getThreadID_impl(SDL_Thread* th) {
+    pthread_t pth = ((struct SDL_Thread_impl*)th)->handle;
+    
+    uint64_t thread_id;
+    // https://www.manpagez.com/man/3/pthread_threadid_np/ : for macOS
+    pthread_threadid_np(pth, &thread_id);
+    return thread_id;
+}
+#define getThreadID(x) getThreadID_impl(x)
+//#define thisThreadID() (long long)pthread_self() //((struct _opaque_pthread_t *)pthread_self())->__sig //pthread_self()
+#define threadID_t uint64_t //long long //long //pthread_t
+#else
+#define thisThreadID() SDL_ThreadID()
+#define threadID_t SDL_threadID
+#define getThreadID(x) SDL_GetThreadID(x)
+#endif
+#define xstr(a) str(a) // https://stackoverflow.com/questions/2653214/stringification-of-a-macro-value
+#define str(a) #a
+
 extern const char    *g_basepath;      /* readonly */
 extern unsigned       g_last_frame_ms; /* readonly */
 extern unsigned long  g_frame_idx;     /* readonly */
-extern SDL_threadID   g_main_thread_id;   /* readonly */
-extern SDL_threadID   g_render_thread_id; /* readonly */
+extern threadID_t     g_main_thread_id;   /* readonly */
+extern threadID_t     g_render_thread_id; /* readonly */
 
 
 #define ASSERT_IN_RENDER_THREAD() \
-    assert(SDL_ThreadID() == g_render_thread_id)
+    assert(thisThreadID() == g_render_thread_id)
 
 #define ASSERT_IN_MAIN_THREAD() \
-    assert(SDL_ThreadID() == g_main_thread_id)
+    assert(thisThreadID() == g_main_thread_id)
 
 
 enum pf_window_flags {
@@ -79,6 +128,21 @@ void Engine_FlushRenderWorkQueue(void);
 void Engine_WaitRenderWorkDone(void);
 void Engine_ClearPendingEvents(void);
 bool Engine_GetArg(const char *name, size_t maxout, char out[static maxout]);
+
+#ifdef EXTERNAL_DRIVER // https://stackoverflow.com/questions/31519449/c99-call-main-function-from-another-main
+#define pf_WinMain pf_WinMain
+#define pf_main pf_main
+#else
+#define pf_WinMain WinMain
+#define pf_main main
+#endif
+
+#if defined(_WIN32)
+int CALLBACK pf_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                     LPSTR lpCmdLine, int nCmdShow);
+#else
+int pf_main(int argc, char **argv);
+#endif
 
 #endif
 

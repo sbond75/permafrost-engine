@@ -30,14 +30,18 @@ let
   withDebuggingCompiled = pkg: pkg;
 #    optimizeWithFlags (pkg.overrideAttrs (old: rec { separateDebugInfo = true; dontStrip = true;  preConfigure = #old.preConfigure ++
  #                                                      ''cmakeFlags="$cmakeFlags -DCMAKE_BUILD_TYPE=Debug"''; })) [ "-DDEBUG" "-O0" "-g3" ];
+  frameworks = pkgs.darwin.apple_sdk.frameworks;
 in
 mkShell {
   buildInputs = [
+    frameworks.Carbon
     (withDebuggingCompiled libGL)
     (withDebuggingCompiled glew)
     (withDebuggingCompiled openal)
     (withDebuggingCompiled SDL2)
     pkg-config
+
+    python27
   ]; # Note: for macos need this: write this into the path indicated:
   # b) For `nix-env`, `nix-build`, `nix-shell` or any other Nix command you can add
   #   { allowUnsupportedSystem = true; }

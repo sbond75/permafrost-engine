@@ -473,13 +473,165 @@ static void render_process_cmds(queue_rcmd_t *cmds)
     }
 }
 
+#ifdef __APPLE__
+typedef void* SDLTranslatorResponder;
+typedef long NSInteger; // https://developer.apple.com/documentation/objectivec/nsinteger?language=objc
+
+//typedef bool BOOL; // https://developer.apple.com/documentation/objectivec/bool?language=objc
+#import <objc/runtime.h>
+#import <objc/message.h>
+
+typedef uint32_t IOPMAssertionID; // https://developer.apple.com/documentation/iokit/iopmassertionid
+typedef struct SDL_VideoData_impl // SDL/src/video/cocoa/SDL_cocoavideo.h
+{
+    int allow_spaces;
+    unsigned int modifierFlags;
+    void *key_layout;
+    SDLTranslatorResponder *fieldEdit;
+    NSInteger clipboard_count;
+    Uint32 screensaver_activity;
+    BOOL screensaver_use_iopm;
+    IOPMAssertionID screensaver_assertion;
+    SDL_mutex *swaplock;
+} SDL_VideoData_impl;
+
+typedef void* SDL_WindowShaper;
+typedef void* SDL_WindowUserData;
+// SDL/src/video/SDL_sysvideo.h from SDL version 2.0.14 (tag release-2.0.14 in https://github.com/libsdl-org/SDL )
+/* Define the SDL window structure, corresponding to toplevel windows */
+struct SDL_Window_impl
+{
+    const void *magic;
+    Uint32 id;
+    char *title;
+    SDL_Surface *icon;
+    int x, y;
+    int w, h;
+    int min_w, min_h;
+    int max_w, max_h;
+    Uint32 flags;
+    Uint32 last_fullscreen_flags;
+    //Uint32 display_index;
+
+    /* Stored position and size for windowed mode */
+    SDL_Rect windowed;
+
+    SDL_DisplayMode fullscreen_mode;
+
+    float opacity;
+
+    float brightness;
+    Uint16 *gamma;
+    Uint16 *saved_gamma;        /* (just offset into gamma) */
+
+    SDL_Surface *surface;
+    SDL_bool surface_valid;
+
+    SDL_bool is_hiding;
+    SDL_bool is_destroying;
+    SDL_bool is_dropping;       /* drag/drop in progress, expecting SDL_SendDropComplete(). */
+
+    //SDL_Rect mouse_rect;
+
+    SDL_WindowShaper *shaper;
+
+    SDL_HitTest hit_test;
+    void *hit_test_data;
+
+    SDL_WindowUserData *data;
+
+    void *driverdata;
+
+    SDL_Window *prev;
+    SDL_Window *next;
+};
+
+typedef void* NSWindow;
+typedef void* NSView;
+typedef void* NSMutableArray;
+typedef void* Cocoa_WindowListener;
+typedef void *EGLSurface; // https://www.khronos.org/registry/EGL/api/EGL/egl.h
+struct SDL_WindowData_impl // SDL/src/video/cocoa/SDL_cocoawindow.h from SDL version 2.0.14 (tag release-2.0.14 in https://github.com/libsdl-org/SDL )
+{
+    SDL_Window *window;
+    NSWindow *nswindow;
+    NSView *sdlContentView;
+    NSMutableArray *nscontexts;
+    SDL_bool created;
+    SDL_bool inWindowFullscreenTransition;
+    //NSInteger flash_request;
+    Cocoa_WindowListener *listener;
+    struct SDL_VideoData_impl *videodata;
+#if SDL_VIDEO_OPENGL_EGL
+    EGLSurface egl_surface;
+#endif
+};
+
+
+// https://gist.github.com/mmassaki/3892543
+void Swizzle(Class c, SEL orig, SEL new)
+{
+    Method origMethod = class_getInstanceMethod(c, orig);
+    Method newMethod = class_getInstanceMethod(c, new);
+    if(class_addMethod(c, orig, method_getImplementation(newMethod), method_getTypeEncoding(newMethod))) // Returns: "YES if the method was added successfully, otherwise NO (for example, the class already contains a method implementation with that name)." ( https://developer.apple.com/documentation/objectivec/1418901-class_addmethod?language=objc )
+        class_replaceMethod(c, new, method_getImplementation(origMethod), method_getTypeEncoding(origMethod));
+    else
+        method_exchangeImplementations(origMethod, newMethod);
+}
+
+// More hacks //
+
+void Replace(Class c, SEL orig, SEL new)
+{
+    Method origMethod = class_getInstanceMethod(c, orig);
+    Method newMethod = class_getInstanceMethod(c, new);
+    if(class_addMethod(c, orig, method_getImplementation(newMethod), method_getTypeEncoding(newMethod))) // Returns: "YES if the method was added successfully, otherwise NO (for example, the class already contains a method implementation with that name)." ( https://developer.apple.com/documentation/objectivec/1418901-class_addmethod?language=objc )
+        class_replaceMethod(c, new, method_getImplementation(origMethod), method_getTypeEncoding(origMethod));
+    else
+        method_setImplementation(origMethod, method_getImplementation(newMethod));
+}
+
+#include <CoreFoundation/CoreFoundation.h> // "CFString is “toll-free bridged” with its Cocoa Foundation counterpart, NSString. This means that the Core Foundation type is interchangeable in function or method calls with the bridged Foundation object. Therefore, in a method where you see an NSString * parameter, you can pass in a CFStringRef, and in a function where you see a CFStringRef parameter, you can pass in an NSString instance. This also applies to concrete subclasses of NSString. See Toll-Free Bridged Types for more information on toll-free bridging." ( https://developer.apple.com/documentation/corefoundation/cfstring?language=objc )
+
+// https://developer.apple.com/documentation/foundation/1395135-nsclassfromstring?language=objc
+Class NSClassFromString(CFStringRef /*NSString **/aClassName);
+
+// https://developer.apple.com/documentation/foundation/1395294-nsselectorfromstring?language=objc
+SEL NSSelectorFromString(CFStringRef /*NSString **/aSelectorName);
+
+// //
+#endif
 static int render(void *data)
 {
     // Hack for macOS //
-    SDL_threadID id = SDL_ThreadID();
+    threadID_t id = thisThreadID();
     if (id != g_main_thread_id) {
         g_render_thread_id = id;
     }
+    
+    // Another hack:
+    CFStringRef aCFString;
+    aCFString = CFStringCreateWithCString(NULL, "SDLOpenGLContext", kCFStringEncodingUTF8);
+    CFStringRef aCFString2;
+    aCFString2 = CFStringCreateWithCString(NULL, "updateIfNeeded", kCFStringEncodingUTF8);
+    CFStringRef aCFString3;
+    aCFString3 = CFStringCreateWithCString(NULL, "explicitUpdate", kCFStringEncodingUTF8);
+    Replace(NSClassFromString(aCFString), NSSelectorFromString(aCFString2), NSSelectorFromString(aCFString3)); // Change the method `updateIfNeeded` on class `SDLOpenGLContext` to be simply a call to its `explicitUpdate` method.
+    CFRelease(aCFString);
+    CFRelease(aCFString2);
+    CFRelease(aCFString3);
+    // //
+    
+    // https://wiki.libsdl.org/SDL_GetVersion //
+    SDL_version compiled;
+    SDL_version linked;
+
+    SDL_VERSION(&compiled);
+    SDL_GetVersion(&linked);
+    printf("We compiled against SDL version %d.%d.%d ...\n",
+           compiled.major, compiled.minor, compiled.patch);
+    printf("But we are linking against SDL version %d.%d.%d.\n",
+           linked.major, linked.minor, linked.patch);
     // //
     
     struct render_sync_state *rstate = data; 
@@ -502,8 +654,26 @@ static int render(void *data)
             break;
 
         render_process_cmds(&G_GetRenderWS()->commands);
-        if(rstate->swap_buffers)
+        if(rstate->swap_buffers) {
+            #if defined(__APPLE__) && !defined(NDEBUG)
+            SDL_mutex* swaplock = (((struct SDL_WindowData_impl*)((struct SDL_Window_impl*)window)->driverdata)->videodata)->swaplock;
+            int ret = SDL_TryLockMutex(swaplock);
+            if (ret == SDL_MUTEX_TIMEDOUT) {
+                // Locked already!
+                printf("Locked already\n");
+                assert(0);
+            }
+            else if (ret == -1) {
+                printf("swaplock error: %s\n", SDL_GetError());
+                exit(1);
+            }
+            else {
+                assert(ret == 0);
+            }
+            #endif
+            
             SDL_GL_SwapWindow(window);
+        }
 
         render_signal_done(rstate);
     }
@@ -668,7 +838,7 @@ SDL_Thread *R_Run(struct render_sync_state *rstate)
 
 void *R_PushArg(const void *src, size_t size)
 {
-    struct render_workspace *ws = (SDL_ThreadID() == g_render_thread_id) ? G_GetRenderWS() 
+    struct render_workspace *ws = (thisThreadID() == g_render_thread_id) ? G_GetRenderWS()
                                                                          : G_GetSimWS();
     void *ret = stalloc(&ws->args, size);
     if(!ret)
@@ -682,7 +852,7 @@ void R_PushCmd(struct rcmd cmd)
 {
     /* If invoking from the render thread, execute immediately
      * as if it were a function call */
-    if(SDL_ThreadID() == g_render_thread_id) {
+    if(thisThreadID() == g_render_thread_id) {
 
         render_dispatch_cmd(cmd);
         return;

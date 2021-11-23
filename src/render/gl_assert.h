@@ -45,8 +45,9 @@
     do {                                                \
         GLenum error = glGetError();                    \
         if(error != GL_NO_ERROR)                        \
-            fprintf(stderr, "%s:%d OpenGL error: %x\n", \
-            __FILE__, __LINE__, error);                 \
+            fprintf(stderr, "%s:%d OpenGL error: 0x%x (%ju): %s\n", \
+            __FILE__, __LINE__, error, error, gluErrorString(error));                 \
+            fflush(stderr);                             \
         assert(error == GL_NO_ERROR);                   \
     }while(0)
 

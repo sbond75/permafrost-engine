@@ -40,6 +40,8 @@
 #include <stddef.h>
 #include <SDL_thread.h>
 
+#include "main.h"
+
 #ifndef NDEBUG
 
 #define PERF_ENTER()            \
@@ -114,7 +116,7 @@ uint32_t Perf_CurrFrameMS(void);
  * none of the other threads are touching the Perf_ API concurrently */
 bool     Perf_Init(void);
 void     Perf_Shutdown(void);
-bool     Perf_RegisterThread(SDL_threadID tid, const char *name);
+bool     Perf_RegisterThread(threadID_t tid, const char *name);
 void     Perf_BeginTick(void);
 void     Perf_FinishTick(void);
 

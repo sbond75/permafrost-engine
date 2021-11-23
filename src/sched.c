@@ -204,6 +204,7 @@ static int              s_idle_workers; /* protected by ready lock */
 
 static size_t           s_nworkers;
 static SDL_Thread      *s_worker_threads[MAX_WORKER_THREADS];
+//static threadID_t       s_worker_thread_id[MAX_WORKER_THREADS] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63}; // Makes fake ID's since SDL_GetThreadID() gives 0 or something on macOS  // NVM_TODO: ensure these ID's don't clash with real thread ID's that actually work!....
 static struct context   s_worker_contexts[MAX_WORKER_THREADS];
 
 /* At the start of each frame, the workers wait on either the
@@ -485,6 +486,12 @@ static bool stack_pointer_valid(const struct task *task)
     return true;
 }
 
+#ifdef __APPLE__
+static uint64_t thread_id_to_key(threadID_t tid)
+{
+    return (uint64_t)tid;
+}
+#else
 static uint64_t thread_id_to_key(SDL_threadID tid)
 {
     union{
@@ -494,8 +501,9 @@ static uint64_t thread_id_to_key(SDL_threadID tid)
     ret.as_tid = tid;
     return ret.as_u64;
 }
+#endif
 
-static void sched_set_thread_tid(SDL_threadID id, uint32_t tid)
+static void sched_set_thread_tid(threadID_t id, uint32_t tid)
 {
     uint64_t key = thread_id_to_key(id);
     khiter_t k = kh_get(tid, s_thread_tid_map, key);
@@ -505,7 +513,8 @@ static void sched_set_thread_tid(SDL_threadID id, uint32_t tid)
 
 static uint32_t sched_curr_thread_tid(void)
 {
-    uint64_t key = thread_id_to_key(SDL_ThreadID());
+    printf("thisThreadID(): %ju\n", thisThreadID()); fflush(stdout);
+    uint64_t key = thread_id_to_key(thisThreadID());
     khiter_t k = kh_get(tid, s_thread_tid_map, key);
     assert(k != kh_end(s_thread_tid_map));
     return kh_val(s_thread_tid_map, k);
@@ -513,7 +522,7 @@ static uint32_t sched_curr_thread_tid(void)
 
 static uint32_t sched_curr_thread_worker_id(void)
 {
-    uint64_t key = thread_id_to_key(SDL_ThreadID());
+    uint64_t key = thread_id_to_key(thisThreadID());
     khiter_t k = kh_get(tid, s_thread_worker_id_map, key);
     assert(k != kh_end(s_thread_worker_id_map));
     return kh_val(s_thread_worker_id_map, k);
@@ -582,7 +591,7 @@ __attribute__((used)) static void sched_task_exit(struct result ret)
 
     task->req.type = _SCHED_REQ_FREE;
 
-    if(SDL_ThreadID() == g_main_thread_id) {
+    if(thisThreadID() == g_main_thread_id) {
         sched_switch_ctx(&task->ctx, &s_main_ctx, 0, NULL);
     }else{
         int id = sched_curr_thread_worker_id();
@@ -786,7 +795,7 @@ static bool sched_wait(struct task *task, uint32_t child_tid)
 static void sched_task_run(struct task *task)
 {
     assert(sched_curr_thread_tid() == NULL_TID);
-    sched_set_thread_tid(SDL_ThreadID(), task->tid);
+    sched_set_thread_tid(thisThreadID(), task->tid);
     task->state = TASK_STATE_ACTIVE;
     assert(stack_pointer_valid(task));
 
@@ -794,7 +803,7 @@ static void sched_task_run(struct task *task)
     pf_snprintf(name, sizeof(name), "Task %03u", task->tid);
     PERF_PUSH(name);
 
-    if(SDL_ThreadID() == g_main_thread_id) {
+    if(thisThreadID() == g_main_thread_id) {
         sched_switch_ctx(&s_main_ctx, &task->ctx, task->retval, task->arg);
     }else{
         int id = sched_curr_thread_worker_id();
@@ -803,7 +812,7 @@ static void sched_task_run(struct task *task)
 
     PERF_POP();
     assert(stack_pointer_valid(task));
-    sched_set_thread_tid(SDL_ThreadID(), NULL_TID);
+    sched_set_thread_tid(thisThreadID(), NULL_TID);
 }
 
 static void sched_task_service_request(struct task *task)
@@ -925,13 +934,17 @@ static void sched_init_thread_tid_map(void)
     int status;
     uint64_t main_key = thread_id_to_key(g_main_thread_id);
 
+    printf("Put thread ID: %ju\n", g_main_thread_id);
     k = kh_put(tid, s_thread_tid_map, g_main_thread_id, &status);
     assert(status != -1 && status != 0);
     kh_value(s_thread_tid_map, k) = NULL_TID;
 
     for(int i = 0; i < s_nworkers; i++) {
 
-        uint64_t key = thread_id_to_key(SDL_GetThreadID(s_worker_threads[i]));
+        //uint64_t key = thread_id_to_key(SDL_GetThreadID(s_worker_threads[i]));
+        //uint64_t key = thread_id_to_key(s_worker_thread_id[&s_worker_threads[i] - s_worker_threads]);
+        uint64_t key = thread_id_to_key(getThreadID(s_worker_threads[i]));
+        printf("Put thread ID: %ju\n", key);
         k = kh_put(tid, s_thread_tid_map, key, &status);
         assert(status != -1 && status != 0);
         kh_value(s_thread_tid_map, k) = NULL_TID;
@@ -943,8 +956,11 @@ static void sched_init_thread_worker_id_map(void)
     for(int i = 0; i < s_nworkers; i++) {
 
         int status;
-        uint64_t key = thread_id_to_key(SDL_GetThreadID(s_worker_threads[i]));
-
+        //uint64_t key = thread_id_to_key(SDL_GetThreadID(s_worker_threads[i]));
+        //uint64_t key = thread_id_to_key(s_worker_thread_id[&s_worker_threads[i] - s_worker_threads]);
+        uint64_t key = thread_id_to_key(getThreadID(s_worker_threads[i]));
+        
+        printf("Worker threads: put thread ID: %ju\n", key);
         khiter_t k = kh_put(tid, s_thread_worker_id_map, key, &status);
         assert(status != -1 && status != 0);
         kh_val(s_thread_worker_id_map, k) = i;
@@ -1136,7 +1152,8 @@ bool Sched_Init(void)
         s_worker_threads[i] = SDL_CreateThread(worker_threadfn, threadname, (void*)((uintptr_t)i));
         if(!s_worker_threads[i])
             goto fail_workers;
-        Perf_RegisterThread(SDL_GetThreadID(s_worker_threads[i]), threadname);
+        //Perf_RegisterThread(SDL_GetThreadID(s_worker_threads[i]), threadname);
+        Perf_RegisterThread(getThreadID(s_worker_threads[i]), threadname);
     }
 
     sched_init_thread_tid_map();
@@ -1478,7 +1495,7 @@ uint64_t Sched_Request(struct request req)
 
     task->req = req;
 
-    if(SDL_ThreadID() == g_main_thread_id) {
+    if(thisThreadID() == g_main_thread_id) {
         return sched_switch_ctx(&task->ctx, &s_main_ctx, 0, NULL);
     }else{
         int id = sched_curr_thread_worker_id();

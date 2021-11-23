@@ -651,6 +651,7 @@ static void shader_install(const struct shader *shader)
 
     if(s_curr_prog != shader->prog_id) {
         glUseProgram(shader->prog_id);
+        GL_ASSERT_OK();
         s_curr_prog = shader->prog_id;
     }
 
@@ -667,7 +668,7 @@ static void shader_install(const struct shader *shader)
 
 bool R_GL_Shader_InitAll(const char *base_path)
 {
-    printf("R_GL_Shader_InitAll: SDL_ThreadID(): %lu, g_main_thread_id: %lu, g_render_thread_id: %lu\n", SDL_ThreadID(), g_main_thread_id, g_render_thread_id);
+    printf("R_GL_Shader_InitAll: " xstr(thisThreadID()) ": %lu, g_main_thread_id: %lu, g_render_thread_id: %lu\n", thisThreadID(), g_main_thread_id, g_render_thread_id);
     ASSERT_IN_RENDER_THREAD();
 
     for(int i = 0; i < ARR_SIZE(s_shaders); i++){

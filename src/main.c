@@ -81,14 +81,16 @@ VEC_IMPL(static inline, event, SDL_Event)
 const char                      *g_basepath; /* write-once - path of the base directory */
 unsigned long                    g_frame_idx = 0;
 
-SDL_threadID                     g_main_thread_id;   /* write-once */
-SDL_threadID                     g_render_thread_id; /* write-once */
+threadID_t                       g_main_thread_id;   /* write-once */
+threadID_t                       g_render_thread_id; /* write-once */
 
 /*****************************************************************************/
 /* STATIC VARIABLES                                                          */
 /*****************************************************************************/
 
 static SDL_Window               *s_window;
+static int                       s_window_width;
+static int                       s_window_height;
 static SDL_Surface              *s_loading_screen;
 
 /* Flag to perform a single step of the simulation while the game is paused. 
@@ -132,6 +134,17 @@ static void process_sdl_events(void)
         case SDL_USEREVENT:
             if(event.user.code == 0) {
                 E_Global_Notify(EVENT_60HZ_TICK, NULL, ES_ENGINE); 
+            }
+            break;
+
+        case SDL_WINDOWEVENT:
+            if(event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                // Update stored size
+                int out_w, out_h;
+                SDL_GL_GetDrawableSize(s_window, &out_w, &out_h);
+                s_window_width = event.window.data1;
+                s_window_height = event.window.data2;
+                printf("SDL_WINDOWEVENT_SIZE_CHANGED: SDL_GL_GetDrawableSize(): %d, %d; event.window: %d, %d\n", out_w, out_h, s_window_width, s_window_height);
             }
             break;
         default: 
@@ -346,7 +359,7 @@ fail_surface:
 
 static bool engine_init(void)
 {
-    g_main_thread_id = SDL_ThreadID();
+    g_main_thread_id = thisThreadID();
 
     vec_event_init(&s_prev_tick_events);
     if(!vec_event_resize(&s_prev_tick_events, 8192))
@@ -405,6 +418,9 @@ static bool engine_init(void)
         res[0], 
         res[1], 
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | wf | extra_flags);
+    // Set initial window size
+    s_window_width = res[0];
+    s_window_height = res[1];
 
     s_loading_screen = engine_create_loading_screen();
     engine_set_icon();
@@ -431,8 +447,9 @@ static bool engine_init(void)
         fprintf(stderr, "Failed to start the render thread.\n");
         goto fail_rthread;
     }
-    g_render_thread_id = SDL_GetThreadID(s_render_thread);
-    printf("engine_init: g_render_thread_id was reported by SDL_GetThreadID() as: %lu\n", g_render_thread_id);
+    //g_render_thread_id = SDL_GetThreadID(s_render_thread);
+    g_render_thread_id = getThreadID(s_render_thread);
+    printf("engine_init: g_render_thread_id was reported by " xstr(getThreadID()) "() as: %lu\n", g_render_thread_id);
     //assert(g_render_thread_id != 0); // https://wiki.libsdl.org/SDL_GetThreadID : "This thread identifier is as reported by the underlying operating system. If SDL is running on a platform that does not support threads the return value will always be zero." -- however, sometimes this works/doesn't work on macOS...
 
     render_thread_start_work();
@@ -667,7 +684,9 @@ void Engine_SetDispMode(enum pf_window_flags wf)
 
 void Engine_WinDrawableSize(int *out_w, int *out_h)
 {
-    SDL_GL_GetDrawableSize(s_window, out_w, out_h);
+    //SDL_GL_GetDrawableSize(s_window, out_w, out_h); // Can't use UI on a thread other than the main thread on macOS, so don't do this line. Instead, return the stored values:
+    *out_w = s_window_width;
+    *out_h = s_window_height;
 }
 
 void Engine_FlushRenderWorkQueue(void)
@@ -737,14 +756,14 @@ bool Engine_GetArg(const char *name, size_t maxout, char out[static maxout])
 }
 
 #if defined(_WIN32)
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+int CALLBACK pf_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
                      LPSTR lpCmdLine, int nCmdShow)
 {
     int argc = __argc;
     char **argv = __argv;
 
 #else
-int main(int argc, char **argv)
+int pf_main(int argc, char **argv)
 {
 #endif
 

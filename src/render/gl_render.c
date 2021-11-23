@@ -1430,6 +1430,7 @@ void R_GL_SetViewport(int *x, int *y, int *w, int *h)
 {
     GL_PERF_ENTER();
     glViewport(*x, *y, *w, *h);
+    GL_ASSERT_OK();
     GL_PERF_RETURN_VOID();
 }
 
