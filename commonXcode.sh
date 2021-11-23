@@ -1,5 +1,22 @@
 arg1="$1" # Arg 1: set to 1 to build for the game that is using the engine
 
+# Run only if this file or the shell.nix is newer than the generated xcconfig (basically what make/Makefiles do)
+if [ -z "$arg1" ] && [ ! -z $(gfind -name shell.nix -newer Config.xcconfig) ]; then # `find -name file2 -newer file1` -- "will return null if file2 is older or the same age as file1. It will return the name (and directory) of file2 if it's newer." -- https://superuser.com/questions/188240/how-to-verify-that-file2-is-newer-than-file1-in-bash/188259
+    # shell.nix is newer
+    :
+elif [ "$arg1" -eq "1" ] && [ ! -z $(gfind -name shell.nix -newer Defenders of Paradise/DoP_Config.xcconfig) ]; then
+    # shell.nix is newer
+    :
+elif [ -z "$arg1" ] && [ ! -z $(gfind -name commonXcode.sh -newer Config.xcconfig) ]; then
+    :
+elif [ "$arg1" -eq "1" ] && [ ! -z $(gfind -name commonXcode.sh -newer Defenders of Paradise/DoP_Config.xcconfig) ]; then
+    :
+else
+    # Nothing to do
+    echo "No new changes"
+    exit 0
+fi
+
 SRC_ROOT="$SRCROOT/.."
 if [ -z "$IN_NIX_SHELL"]; then
     if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer

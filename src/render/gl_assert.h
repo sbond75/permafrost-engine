@@ -51,7 +51,7 @@ static inline void GL_ASSERT_OK() {
         __FILE__, __LINE__, error, error, gluErrorString(error));
         fflush(stderr);
     }
-    assert(error == GL_NO_ERROR);
+    //assert(error == GL_NO_ERROR);
     #pragma clang diagnostic pop
 }
 

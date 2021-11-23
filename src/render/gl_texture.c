@@ -379,15 +379,21 @@ void R_GL_Texture_ArrayMake(const struct material *mats, size_t num_mats,
     ASSERT_IN_RENDER_THREAD();
 
     glActiveTexture(tunit);
+    GL_ASSERT_OK();
     out->tunit = tunit;
     glGenTextures(1, &out->id);
+    GL_ASSERT_OK();
     glBindTexture(GL_TEXTURE_2D_ARRAY, out->id);
+    GL_ASSERT_OK();
 
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, 
         CONFIG_ARR_TEX_RES, CONFIG_ARR_TEX_RES, num_mats, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    GL_ASSERT_OK();
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    GL_ASSERT_OK();
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    GL_ASSERT_OK();
 
     for(int i = 0; i < num_mats; i++) {
 
@@ -395,16 +401,21 @@ void R_GL_Texture_ArrayMake(const struct material *mats, size_t num_mats,
             continue;
 
         glBindTexture(GL_TEXTURE_2D, mats[i].texture.id);
+        GL_ASSERT_OK();
 
         int w, h;
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
+        GL_ASSERT_OK();
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
+        GL_ASSERT_OK();
+        printf("Resizing %d, %d to %d, %d\n", w, h, CONFIG_ARR_TEX_RES, CONFIG_ARR_TEX_RES);
 
         GLubyte *orig_data = malloc(w * h * 4);
         if(!orig_data) {
             continue;
         }
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, orig_data);
+        GL_ASSERT_OK();
 
         GLubyte resized_data[CONFIG_ARR_TEX_RES * CONFIG_ARR_TEX_RES * 4];
         int res = stbir_resize_uint8(orig_data, w, h, 0, resized_data, CONFIG_ARR_TEX_RES, CONFIG_ARR_TEX_RES, 0, 4);
@@ -416,13 +427,19 @@ void R_GL_Texture_ArrayMake(const struct material *mats, size_t num_mats,
         free(orig_data);
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, CONFIG_ARR_TEX_RES, 
             CONFIG_ARR_TEX_RES, 1, GL_RGBA, GL_UNSIGNED_BYTE, resized_data);
+            GL_ASSERT_OK();
     }
 
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+    GL_ASSERT_OK();
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    GL_ASSERT_OK();
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GL_ASSERT_OK();
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    GL_ASSERT_OK();
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GL_ASSERT_OK();
     glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_LOD_BIAS, LOD_BIAS);
 
     GL_ASSERT_OK();
