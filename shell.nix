@@ -35,7 +35,8 @@ in
 mkShell {
   buildInputs = [
     (lib.optional (stdenv.hostPlatform.isMacOS) frameworks.Carbon)
-  #] ++ (lib.optional (stdenv.hostPlatform.isLinux) [pulseaudio]) ++ [
+    #] ++ (lib.optional (stdenv.hostPlatform.isLinux) [pulseaudio]) ++ [
+    ] ++ (lib.optional (stdenv.hostPlatform.isLinux) [gdb]) ++ [
     (withDebuggingCompiled libGL)
     (withDebuggingCompiled glew)
     (withDebuggingCompiled openal)

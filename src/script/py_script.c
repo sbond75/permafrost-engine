@@ -3033,7 +3033,8 @@ PyMODINIT_FUNC initpf(void)
     S_Constants_Expose(module); 
 }
 
-#include "file_watcher.h"
+#include "../file_watcher.h"
+#include <libgen.h>
 int s_fd_filewatcher;
 bool S_Init(const char *progname, const char *base_path, struct nk_context *ctx)
 {
@@ -3138,24 +3139,28 @@ bool S_RunString(const char *str)
     
     PyObject *global_dict = PyModule_GetDict(main_module); /* borrowed */
 
-    if(PyDict_GetItemString(global_dict, "__file__") == NULL) {
-        PyObject *f = PyString_FromString(path);
-        if(f == NULL)
-            goto done;
-        if(PyDict_SetItemString(global_dict, "__file__", f) < 0) {
-            Py_DECREF(f);
-            goto done;
-        }
-        Py_DECREF(f);
-    }
+    // TODO: what does this do? It is originally from S_RunFile().
+    /* if(PyDict_GetItemString(global_dict, "__file__") == NULL) { */
+    /*     PyObject *f = PyString_FromString(path); */
+    /*     if(f == NULL) */
+    /*         goto done; */
+    /*     if(PyDict_SetItemString(global_dict, "__file__", f) < 0) { */
+    /*         Py_DECREF(f); */
+    /*         goto done; */
+    /*     } */
+    /*     Py_DECREF(f); */
+    /* } */
 
-    PyObject *result = PyRun_StringFlags(str, Py_single_input /* Py_single_input for a single statement, or Py_file_input for more than a statement */, global_dict, global_dict);
+    PyObject *result = PyRun_StringFlags(str, Py_single_input /* Py_single_input for a single statement, or Py_file_input for more than a statement */, global_dict, global_dict, NULL);
     ret = (result != NULL);
     Py_XDECREF(result);
 
     if(PyErr_Occurred()) {
         S_ShowLastError();
     }
+
+done:
+    return ret;
 }
 
 bool S_RunFile(const char *path, int argc, char **argv)
@@ -3202,11 +3207,12 @@ bool S_RunFile(const char *path, int argc, char **argv)
         S_ShowLastError();
     }
 
-    // Install hot reloader
-    if (add_watch(s_fd_filewatcher, dirname(path)) != 0) {
-      ret = false; // TODO: free script on error?
-      goto done;
-    }
+    /* // TODO: implement this part */
+    /* // Install hot reloader */
+    /* if (add_watch(s_fd_filewatcher, dirname(path /\*TODO: strcpy since dirname "may modify" this string; it isn't const: https://linux.die.net/man/3/dirname *\/)) != 0) { */
+    /*   ret = false; // TODO: free script on error? */
+    /*   goto done; */
+    /* } */
 
 done:
     fclose(script);

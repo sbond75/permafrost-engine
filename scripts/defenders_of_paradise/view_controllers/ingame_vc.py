@@ -99,6 +99,10 @@ class IngameVC(vc.ViewController):
         self.__session_view.hide()
         ss = pf.get_simstate()
         pf.set_simstate(pf.G_PAUSED_UI_RUNNING)
+        print(event)
+        print(type(event))
+        print(id(event))
+        print(hex(id(event)))
         pf.save_session(event)
         pf.set_simstate(ss)
 
