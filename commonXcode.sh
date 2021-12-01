@@ -18,7 +18,7 @@ else
 fi
 
 SRC_ROOT="$SRCROOT/.."
-if [ -z "$IN_NIX_SHELL"]; then
+if [ -z "$IN_NIX_SHELL" ]; then
     if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
     
     #~/.nix-profile/bin/nix-shell --run "bash \"$0\"" -p opencv pkgconfig
