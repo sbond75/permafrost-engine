@@ -4253,6 +4253,15 @@ static void _glewInfo_GL_EXT_EGL_image_storage (void)
 
 #endif /* GL_EXT_EGL_image_storage */
 
+#ifdef GL_EXT_EGL_image_storage_compression
+
+static void _glewInfo_GL_EXT_EGL_image_storage_compression (void)
+{
+  glewPrintExt("GL_EXT_EGL_image_storage_compression", GLEW_EXT_EGL_image_storage_compression, glewIsSupported("GL_EXT_EGL_image_storage_compression"), glewGetExtension("GL_EXT_EGL_image_storage_compression"));
+}
+
+#endif /* GL_EXT_EGL_image_storage_compression */
+
 #ifdef GL_EXT_EGL_sync
 
 static void _glewInfo_GL_EXT_EGL_sync (void)
@@ -6482,6 +6491,18 @@ static void _glewInfo_GL_EXT_texture_storage (void)
 }
 
 #endif /* GL_EXT_texture_storage */
+
+#ifdef GL_EXT_texture_storage_compression
+
+static void _glewInfo_GL_EXT_texture_storage_compression (void)
+{
+  GLboolean fi = glewPrintExt("GL_EXT_texture_storage_compression", GLEW_EXT_texture_storage_compression, glewIsSupported("GL_EXT_texture_storage_compression"), glewGetExtension("GL_EXT_texture_storage_compression"));
+
+  glewInfoFunc(fi, "glTexStorageAttribs2DEXT", glTexStorageAttribs2DEXT == NULL);
+  glewInfoFunc(fi, "glTexStorageAttribs3DEXT", glTexStorageAttribs3DEXT == NULL);
+}
+
+#endif /* GL_EXT_texture_storage_compression */
 
 #ifdef GL_EXT_texture_swizzle
 
@@ -12488,6 +12509,17 @@ static void _glewInfo_EGL_EXT_surface_SMPTE2086_metadata (void)
 
 #endif /* EGL_EXT_surface_SMPTE2086_metadata */
 
+#ifdef EGL_EXT_surface_compression
+
+static void _glewInfo_EGL_EXT_surface_compression (void)
+{
+  GLboolean fi = glewPrintExt("EGL_EXT_surface_compression", EGLEW_EXT_surface_compression, eglewIsSupported("EGL_EXT_surface_compression"), eglewGetExtension("EGL_EXT_surface_compression"));
+
+  glewInfoFunc(fi, "eglQuerySupportedCompressionRatesEXT", eglQuerySupportedCompressionRatesEXT == NULL);
+}
+
+#endif /* EGL_EXT_surface_compression */
+
 #ifdef EGL_EXT_swap_buffers_with_damage
 
 static void _glewInfo_EGL_EXT_swap_buffers_with_damage (void)
@@ -15873,6 +15905,9 @@ static void glewInfo (void)
 #ifdef GL_EXT_EGL_image_storage
   _glewInfo_GL_EXT_EGL_image_storage();
 #endif /* GL_EXT_EGL_image_storage */
+#ifdef GL_EXT_EGL_image_storage_compression
+  _glewInfo_GL_EXT_EGL_image_storage_compression();
+#endif /* GL_EXT_EGL_image_storage_compression */
 #ifdef GL_EXT_EGL_sync
   _glewInfo_GL_EXT_EGL_sync();
 #endif /* GL_EXT_EGL_sync */
@@ -16413,6 +16448,9 @@ static void glewInfo (void)
 #ifdef GL_EXT_texture_storage
   _glewInfo_GL_EXT_texture_storage();
 #endif /* GL_EXT_texture_storage */
+#ifdef GL_EXT_texture_storage_compression
+  _glewInfo_GL_EXT_texture_storage_compression();
+#endif /* GL_EXT_texture_storage_compression */
 #ifdef GL_EXT_texture_swizzle
   _glewInfo_GL_EXT_texture_swizzle();
 #endif /* GL_EXT_texture_swizzle */
@@ -18401,6 +18439,9 @@ static void eglewInfo ()
 #ifdef EGL_EXT_surface_SMPTE2086_metadata
   _glewInfo_EGL_EXT_surface_SMPTE2086_metadata();
 #endif /* EGL_EXT_surface_SMPTE2086_metadata */
+#ifdef EGL_EXT_surface_compression
+  _glewInfo_EGL_EXT_surface_compression();
+#endif /* EGL_EXT_surface_compression */
 #ifdef EGL_EXT_swap_buffers_with_damage
   _glewInfo_EGL_EXT_swap_buffers_with_damage();
 #endif /* EGL_EXT_swap_buffers_with_damage */

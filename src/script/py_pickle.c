@@ -56,6 +56,7 @@ typedef void *mod_ty; //symtable.h wants this
 #define ARR_SIZE(a) (sizeof(a)/sizeof(a[0]))
 #define TOP(_stk)   (vec_AT(_stk, vec_size(_stk)-1))
 #define CHK_TRUE(_pred, _label) do{ if(!(_pred)) goto _label; }while(0)
+#define CHK_TRUE_MSG(_pred, _label, /* printf args: */ ...) do{ if(!(_pred)) { printf(__VA_ARGS__); goto _label; } }while(0)
 #define MIN(a, b)   ((a) < (b) ? (a) : (b))
 #define TP(_p)      ((PyTypeObject*)_p)
 
@@ -7479,12 +7480,13 @@ static bool pickle_obj(struct pickle_ctx *ctx, PyObject *obj, SDL_RWops *stream)
     pickle_func_t pf;
 
     if(0 != Py_EnterRecursiveCall("pickle_obj")) {
+        printf("recursion error\n");
         PyErr_SetObject(PyExc_RuntimeError, PyExc_RecursionErrorInst);
         goto fail;
     }
 
     if(memo_contains(ctx, obj)) {
-        CHK_TRUE(emit_get(ctx, obj, stream), fail);
+      CHK_TRUE_MSG(emit_get(ctx, obj, stream), fail, "emit_get error\n");
         goto out;
     }
 
@@ -7495,6 +7497,7 @@ static bool pickle_obj(struct pickle_ctx *ctx, PyObject *obj, SDL_RWops *stream)
         if(obj->ob_type->tp_flags & Py_TPFLAGS_HEAPTYPE) {
             pf = newclass_instance_pickle;
         }else{
+	    printf("pickle object type error\n");
             SET_RUNTIME_EXC("Cannot pickle object of type:%s", obj->ob_type->tp_name);
             goto fail;
         }
@@ -7502,6 +7505,7 @@ static bool pickle_obj(struct pickle_ctx *ctx, PyObject *obj, SDL_RWops *stream)
     assert(pf);
 
     if(0 != pf(ctx, obj, stream)) {
+        printf("pf error\n");
         assert(PyErr_Occurred());
         goto fail; 
     }
@@ -7509,10 +7513,11 @@ static bool pickle_obj(struct pickle_ctx *ctx, PyObject *obj, SDL_RWops *stream)
     /* Some objects (eg. lists) may already be memoized */
     if(!memo_contains(ctx, obj)) {
         memoize(ctx, obj);
-        CHK_TRUE(emit_put(ctx, obj, stream), fail);
+        CHK_TRUE_MSG(emit_put(ctx, obj, stream), fail, "memoize emit_put error\n");
     }
 
     if(pickle_attrs(ctx, obj, stream)) {
+        printf("pickle_arrs error\n");
         assert(PyErr_Occurred());
         goto fail; 
     }
@@ -7608,14 +7613,18 @@ bool S_PickleObjgraph(PyObject *obj, SDL_RWops *stream)
     struct pickle_ctx ctx;
 
     int ret = pickle_ctx_init(&ctx);
-    if(!ret) 
-        goto err;
+    if(!ret) {
+      printf("Error in pickle_ctx_init\n");
+      goto err;
+    }
 
-    if(!pickle_obj(&ctx, obj, stream))
-        goto err;
+    if(!pickle_obj(&ctx, obj, stream)) {
+      printf("Error pickling object\n");
+      goto err;
+    }
 
     char term[] = {STOP, '\0'};
-    CHK_TRUE(stream->write(stream, term, 1, ARR_SIZE(term)), err_write);
+    CHK_TRUE(stream->write(stream, term, ARR_SIZE(term), 1), err_write);
 
     pickle_ctx_destroy(&ctx);
     return true;

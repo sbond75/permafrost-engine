@@ -3033,6 +3033,9 @@ PyMODINIT_FUNC initpf(void)
     S_Constants_Expose(module); 
 }
 
+#include "../file_watcher.h"
+#include <libgen.h>
+int s_fd_filewatcher;
 bool S_Init(const char *progname, const char *base_path, struct nk_context *ctx)
 {
     Py_NoSiteFlag = 1;
@@ -3076,11 +3079,33 @@ bool S_Init(const char *progname, const char *base_path, struct nk_context *ctx)
     s_create_settings();
 
     E_Global_Register(EVENT_UPDATE_START, s_on_update, NULL, G_ALL);
+
+    // Create hot reload watcher
+    if (create_file_watcher(&s_fd_filewatcher) != 0) {
+      return false;
+    }
+    
     return true;
+}
+
+void processCreate(const char* path) {
+  // Do nothing
+}
+void processModify(const char* path) {
+  // TODO: not yet implemented; see https://docs.python.org/2.7/library/functions.html#reload and https://docs.python.org/2.7/c-api/import.html#c.PyImport_ReloadModule
+  //PyImport_ReloadModule(
+}
+void S_HandleFileChanges() {
+  if (handle_changes(s_fd_filewatcher, processCreate, processModify) == 1) {
+    // Error; ignore it
+  }
 }
 
 void S_Shutdown(void)
 {
+    // Free hot reload watcher
+    close_file_watcher(s_fd_filewatcher);
+  
     E_Global_Unregister(EVENT_UPDATE_START, s_on_update);
 
     /* Free any globaly retained Python objects before finalizing 
@@ -3102,6 +3127,40 @@ void S_Shutdown(void)
     S_Task_Shutdown();
     S_Entity_Shutdown();
     S_UI_Shutdown();
+}
+
+// TODO: untested function
+bool S_RunString(const char *str)
+{
+    bool ret = false;
+    PyObject *main_module = PyImport_AddModule("__main__"); /* borrowed */
+    if(!main_module)
+        goto done;
+    
+    PyObject *global_dict = PyModule_GetDict(main_module); /* borrowed */
+
+    // TODO: what does this do? It is originally from S_RunFile().
+    /* if(PyDict_GetItemString(global_dict, "__file__") == NULL) { */
+    /*     PyObject *f = PyString_FromString(path); */
+    /*     if(f == NULL) */
+    /*         goto done; */
+    /*     if(PyDict_SetItemString(global_dict, "__file__", f) < 0) { */
+    /*         Py_DECREF(f); */
+    /*         goto done; */
+    /*     } */
+    /*     Py_DECREF(f); */
+    /* } */
+
+    PyObject *result = PyRun_StringFlags(str, Py_single_input /* Py_single_input for a single statement, or Py_file_input for more than a statement */, global_dict, global_dict, NULL);
+    ret = (result != NULL);
+    Py_XDECREF(result);
+
+    if(PyErr_Occurred()) {
+        S_ShowLastError();
+    }
+
+done:
+    return ret;
 }
 
 bool S_RunFile(const char *path, int argc, char **argv)
@@ -3147,6 +3206,13 @@ bool S_RunFile(const char *path, int argc, char **argv)
     if(PyErr_Occurred()) {
         S_ShowLastError();
     }
+
+    /* // TODO: implement this part */
+    /* // Install hot reloader */
+    /* if (add_watch(s_fd_filewatcher, dirname(path /\*TODO: strcpy since dirname "may modify" this string; it isn't const: https://linux.die.net/man/3/dirname *\/)) != 0) { */
+    /*   ret = false; // TODO: free script on error? */
+    /*   goto done; */
+    /* } */
 
 done:
     fclose(script);

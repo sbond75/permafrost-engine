@@ -25,14 +25,24 @@ PYTHON_SRC = ./deps/Python
 OPENAL_SRC = ./deps/openal-soft
 
 # ------------------------------------------------------------------------------
-# Linux
+# Linux and macOS
 # ------------------------------------------------------------------------------
 
+OS := $(shell uname -s)
+
+ifeq ($(OS),Darwin)
 LINUX_GLEW_LIB = libGLEW.dylib
 LINUX_SDL2_LIB = libSDL2.dylib
 LINUX_PYTHON_LIB = libpython2.7.dylib
 LINUX_PYTHON_TARGET = libpython2.7.dylib
 LINUX_OPENAL_LIB = libopenal.dylib
+else
+LINUX_GLEW_LIB = libGLEW.so
+LINUX_SDL2_LIB = libSDL2.so
+LINUX_PYTHON_LIB = libpython2.7.so
+LINUX_PYTHON_TARGET = libpython2.7.so
+LINUX_OPENAL_LIB = libopenal.so
+endif
 
 #LINUX_SDL2_CONFIG = --host=x86_64-pc-linux-gnu
 #LINUX_PYTHON_CONFIG = --host=x86_64-pc-linux-gnu
@@ -63,7 +73,6 @@ LINUX_LDFLAGS = \
 #	-Xlinker -export-dynamic \
 #-lGL \
 
-OS := $(shell uname -s)
 ifeq ($(OS),Darwin)
     LINUX_LDFLAGS += \
 	 -framework OpenGL
@@ -174,10 +183,12 @@ DEPS = \
 # Targets
 # ------------------------------------------------------------------------------
 
+.DEFAULT_GOAL := pf
+
 ./lib/$(GLEW_LIB):
 	mkdir -p ./lib
-	make -C $(GLEW_SRC) extensions
-	make -C $(GLEW_SRC) $(GLEW_OPTS) glew.lib.shared
+	$(MAKE) -C $(GLEW_SRC) extensions
+	$(MAKE) -C $(GLEW_SRC) $(GLEW_OPTS) glew.lib.shared
 	cp $(GLEW_SRC)/lib/$(GLEW_LIB) $@
 
 ./lib/$(SDL2_LIB):
@@ -185,7 +196,7 @@ DEPS = \
 	mkdir -p $(SDL2_SRC)/build
 	cd $(SDL2_SRC)/build \
 		&& ../configure $(SDL2_CONFIG) \
-		&& make
+		&& $(MAKE)
 	cp $(SDL2_SRC)/build/build/.libs/$(SDL2_LIB) $@
 
 ./lib/$(PYTHON_LIB):
@@ -198,14 +209,14 @@ DEPS = \
 		--without-threads \
 		--without-signal-module \
 	&& cp ./pyconfig.h ../Include/. \
-	&& make $(PYTHON_TARGET) CFLAGS=$(PYTHON_DEFS)
+	&& $(MAKE) $(PYTHON_TARGET) CFLAGS=$(PYTHON_DEFS)
 	cp $(PYTHON_SRC)/build/$(PYTHON_TARGET) $@
 
 ./lib/$(OPENAL_LIB):
 	mkdir -p $(OPENAL_SRC)/build
 	cd $(OPENAL_SRC)/build \
 		&& cmake .. $(OPENAL_OPTS) \
-		&& make 
+		&& $(MAKE) 
 	cp $(OPENAL_SRC)/build/$(OPENAL_LIB) $@
 
 deps: $(DEPS)
@@ -245,10 +256,10 @@ run_editor:
 
 launchers:
 ifeq ($(PLAT),WINDOWS)
-	make -C launcher BIN_PATH='.\\\\lib\\\\pf.exe' SCRIPT_PATH="./scripts/rts/main.py" BIN="../demo.exe" launcher
-	make -C launcher BIN_PATH='.\\\\lib\\\\pf.exe' SCRIPT_PATH="./scripts/editor/main.py" BIN="../editor.exe" launcher
+	$(MAKE) -C launcher BIN_PATH='.\\\\lib\\\\pf.exe' SCRIPT_PATH="./scripts/rts/main.py" BIN="../demo.exe" launcher
+	$(MAKE) -C launcher BIN_PATH='.\\\\lib\\\\pf.exe' SCRIPT_PATH="./scripts/editor/main.py" BIN="../editor.exe" launcher
 else
-	make -C launcher BIN_PATH=$(BIN) SCRIPT_PATH="./scripts/rts/main.py" BIN="../demo" launcher
-	make -C launcher BIN_PATH=$(BIN) SCRIPT_PATH="./scripts/editor/main.py" BIN="../editor" launcher
+	$(MAKE) -C launcher BIN_PATH=$(BIN) SCRIPT_PATH="./scripts/rts/main.py" BIN="../demo" launcher
+	$(MAKE) -C launcher BIN_PATH=$(BIN) SCRIPT_PATH="./scripts/editor/main.py" BIN="../editor" launcher
 endif
 

@@ -129,6 +129,22 @@ static void process_sdl_events(void)
             if(event.key.keysym.sym == SDLK_q && (event.key.keysym.mod & KMOD_LALT)) {
                 s_quit = true; 
             }
+	    else if (event.key.keysym.sym == SDLK_r && (event.key.keysym.mod & KMOD_LALT)) {
+	      /* // TODO: Temp, "hot reload" by restarting python interpreter and current scene.. */
+	      /* // Restart python */
+	      /* S_Shutdown(); */
+	      /* if(!S_Init(s_argv[0], g_basepath, UI_GetContext())) { */
+	      /* 	fprintf(stderr, "Failed to reinitialize scripting subsystem\n"); */
+	      /* 	exit(1); */
+	      /* } */
+	      /* // Restart scene by saving and loading */
+	      /* /\* char buf[1024]; *\/ */
+	      /* /\* sprintf(buf, "pf.save_session(%s)",  *\/ */
+	      /* /\* if (!S_RunString( *\/ */
+
+	      /* // Save sessions is broken... try it from the menus.. so I can't do this.. */
+	      
+	    }
             break;
 
         case SDL_USEREVENT:
@@ -848,6 +864,10 @@ int pf_main(int argc, char **argv)
         G_Update();
         G_Render();
         Sched_Tick();
+
+	// Handle hot reloads
+	// TODO: implement hot reload
+	//S_HandleFileChanges();
 
         render_thread_wait_done();
 
