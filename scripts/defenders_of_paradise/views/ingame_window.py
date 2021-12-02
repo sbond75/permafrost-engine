@@ -38,7 +38,7 @@ from constants import *
 class IngameWindow(pf.Window):
 
     WIDTH = 250
-    HEIGHT = 390
+    HEIGHT = 390 + 60 + 60
 
     def __init__(self):
         super(IngameWindow, self).__init__("Defenders of Paradise", (25, 25, IngameWindow.WIDTH, IngameWindow.HEIGHT), 
@@ -70,6 +70,12 @@ class IngameWindow(pf.Window):
         def on_exit():
             pf.global_event(pf.SDL_QUIT, None)
 
+        def on_host():
+            pf.global_event(EVENT_HOST, None)
+            
+        def on_join():
+            pf.global_event(EVENT_JOIN, None)
+            
         def on_settings():
             pf.global_event(EVENT_SETTINGS_SHOW, None)
 
@@ -85,6 +91,12 @@ class IngameWindow(pf.Window):
         def on_session():
             pf.global_event(EVENT_SESSION_SHOW, None)
 
+        self.layout_row_dynamic(60, 1)
+        self.button_label("Host Game", on_host)
+        
+        self.layout_row_dynamic(60, 1)
+        self.button_label("Join Game", on_join)
+        
         self.layout_row_dynamic(30, 1)
         self.button_label("Settings", on_settings)
 

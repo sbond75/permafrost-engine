@@ -44,6 +44,8 @@ ACTION_NUM_COLS = 4
 ############################################################
 
 EVENT_CONTROLLED_FACTION_CHANGED = 0x20000
+EVENT_HOST                       = 0x200001
+EVENT_JOIN                       = 0x200001
 EVENT_SETTINGS_SHOW              = 0x20001
 EVENT_PERF_SHOW                  = 0x20002
 EVENT_SIMSTATE_CHANGE            = 0x20003

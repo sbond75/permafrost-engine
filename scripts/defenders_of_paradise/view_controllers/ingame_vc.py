@@ -49,15 +49,53 @@ import common.views.session_window as sw
 
 import common.constants
 
+class HostView(pf.Window):
+    def __init__(self):
+        super(HostView, self).__init__("Host Game", (1920 / 2, 1080 / 2, 400, 250), pf.NK_WINDOW_BORDER | pf.NK_WINDOW_MOVABLE | pf.NK_WINDOW_MINIMIZABLE | pf.NK_WINDOW_TITLE |  pf.NK_WINDOW_NO_SCROLLBAR, (1920, 1080))
+    
+    def update(self):
+        self.layout_row_dynamic(20, 1)
+        self.label_colored_wrap("Waiting for players to join...", (255, 255, 255))
+
+
+class JoinView(pf.Window):
+    def __init__(self):
+        super(JoinView, self).__init__("Join Game", (1920 / 2, 1080 / 2, 400, 250), pf.NK_WINDOW_BORDER | pf.NK_WINDOW_MOVABLE | pf.NK_WINDOW_MINIMIZABLE | pf.NK_WINDOW_TITLE |  pf.NK_WINDOW_NO_SCROLLBAR, (1920, 1080))
+        
+class HostVC(vc.ViewController):
+    def __init__(self):
+        self.__view = HostView()
+
+    def activate(self):
+        self.__view.show()
+        
+    def deactivate(self):
+        self.__view.hide()
+
+class JoinVC(vc.ViewController):
+    def __init__(self):
+        self.__view = JoinView()
+        
+    def activate(self):
+        self.__view.show()
+        
+    def deactivate(self):
+        self.__view.hide()
+    
+
 class IngameVC(vc.ViewController):
 
     def __init__(self, view):
         self.__view = view
         self.__perf_view = psw.PerfStatsWindow()
+        self.__host_vc = HostVC()
+        self.__join_vc = JoinVC()
         self.__settings_vc = tbvc.TabBarVC(stw.SettingsTabbedWindow(),
             tab_change_event=common.constants.EVENT_SETTINGS_TAB_SEL_CHANGED)
         self.__settings_vc.push_child("Video", vsvc.VideoSettingsVC(vsw.VideoSettingsWindow()))
         self.__settings_vc.push_child("Game", gsvc.GameSettingsVC(gsw.GameSettingsWindow()))
+        self.__host_shown = False
+        self.__join_shown = False
         self.__settings_shown = False
         self.__session_view = sw.SessionWindow()
 
@@ -74,6 +112,16 @@ class IngameVC(vc.ViewController):
             pf.set_faction_controllable(i, False) 
         pf.set_faction_controllable(event, True)
 
+    def __on_host(self, event):
+        if not self.__host_shown:
+            self.__host_vc.activate()
+            self.__host_shown = True
+
+    def __on_join(self, event):
+        if not self.__join_shown:
+            self.__join_vc.activate()
+            self.__join_shown = True        
+        
     def __on_settings_show(self, event):
         if not self.__settings_shown:
             self.__settings_vc.activate()
@@ -112,6 +160,8 @@ class IngameVC(vc.ViewController):
 
     def activate(self):
         pf.register_ui_event_handler(EVENT_CONTROLLED_FACTION_CHANGED, IngameVC.__on_controlled_faction_chagned, self)
+        pf.register_ui_event_handler(EVENT_HOST, IngameVC.__on_host, self)
+        pf.register_ui_event_handler(EVENT_JOIN, IngameVC.__on_join, self)
         pf.register_ui_event_handler(EVENT_SETTINGS_SHOW, IngameVC.__on_settings_show, self)
         pf.register_ui_event_handler(EVENT_PERF_SHOW, IngameVC.__on_perf_show, self)
         pf.register_ui_event_handler(common.constants.EVENT_SETTINGS_HIDE, IngameVC.__on_settings_hide, self)
