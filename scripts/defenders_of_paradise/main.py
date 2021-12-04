@@ -32,6 +32,35 @@
 #  statement from your version.
 #
 
+
+# Fix path:
+""" //append nix store modules here.
+    // Need these from the REPL:
+    /*
+>>> import sys; print(sys.path)
+['', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python27.zip', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/plat-linux2', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/lib-tk', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/lib-old', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/lib-dynload', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/site-packages', '/nix/store/mzqylq95iznif6j9j5rr2h4hb3bvcbd6-python-2.7.18-env/lib/python2.7/site-packages']
+*/
+    // Within permafrost engine without the above from the REPL, it is:
+    /*
+['/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python27.zip', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/plat-linux2', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/lib-tk', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/lib-old', '/nix/store/16w1h61pxvyxljizrkj26s9h2apqq3xn-python-2.7.18/lib/python2.7/lib-dynload', './scripts', './scripts/stdlib', './scripts/defenders_of_paradise']
+*/"""
+import sys; print(sys.path)
+import os
+basepath = None
+for item in sys.path:
+    if item.endswith(os.path.join('lib', 'python2.7')):
+        basepath = item
+sys.path.append(os.path.join(basepath, 'site-packages'))
+
+# import site; res = site.getsitepackages(); print(res)
+# for p in res:
+#     sys.path.append(p)
+
+# None of the above have the correct hash for nix store, resulting in probably directories that don't exist. So, hardcode..:
+sys.path.append('/nix/store/mzqylq95iznif6j9j5rr2h4hb3bvcbd6-python-2.7.18-env/lib/python2.7/site-packages')
+print("New path:", sys.path)
+
+
 import pf
 import globals
 import traceback

@@ -49,9 +49,45 @@ import common.views.session_window as sw
 
 import common.constants
 
+import common.advertise as ad
+from threading import Thread
+import socket
+import common.zeroconfTesting as sb # service browser
+
+localIP     = "127.0.0.1"
+localPort   = 4567
+bufferSize  = 1024
+
 class HostView(pf.Window):
     def __init__(self):
         super(HostView, self).__init__("Host Game", (1920 / 2, 1080 / 2, 400, 250), pf.NK_WINDOW_BORDER | pf.NK_WINDOW_MOVABLE | pf.NK_WINDOW_MINIMIZABLE | pf.NK_WINDOW_TITLE |  pf.NK_WINDOW_NO_SCROLLBAR, (1920, 1080))
+        pair = ad.run() # Start advertizing our service
+
+        # Wait for UDP packet
+        def threaded_function(args):
+            print("UDP server starting")
+            # Create a datagram socket
+            UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+            # Bind to address and ip
+            UDPServerSocket.bind((localIP, localPort))
+            print("UDP server up and listening")
+            (bytes_, address) = UDPServerSocket.recvfrom(bufferSize) # "The return value is a pair (bytes, address) where bytes is a bytes object representing the data received and address is the address of the socket sending the data."
+            print("Got message:", bytes_, "from", address)
+            # if bytes_ valid, stop the ad:
+            if bytes_.startswith('connect'):
+                ad.stop(pair)
+
+                clientMsg = "Message from Client:{}".format(bytes_)
+                clientIP  = "Client IP Address:{}".format(address)
+                
+                print(clientMsg)
+                print(clientIP)
+
+                # Sending a reply to client
+                UDPServerSocket.sendto(bytes('accept', 'utf-8'), address)
+        self.thread = Thread(target = threaded_function, args = (1,))
+        self.thread.daemon = True # daemon won't stop main thread from finishing
+        self.thread.start()
     
     def update(self):
         self.layout_row_dynamic(20, 1)
@@ -61,6 +97,36 @@ class HostView(pf.Window):
 class JoinView(pf.Window):
     def __init__(self):
         super(JoinView, self).__init__("Join Game", (1920 / 2, 1080 / 2, 400, 250), pf.NK_WINDOW_BORDER | pf.NK_WINDOW_MOVABLE | pf.NK_WINDOW_MINIMIZABLE | pf.NK_WINDOW_TITLE |  pf.NK_WINDOW_NO_SCROLLBAR, (1920, 1080))
+        self.possible = []
+
+        # Scan for Bonjour? services
+        def onAddService(info):
+            if info.server.startswith('defenders_of_paradise'):
+                # Add to list
+                def joinFn():
+                    address = socket.inet_ntoa(info.address)
+                    print("Joining", info.name, "with address", address, "and port", info.port)
+                    # Send packet with UDP
+                    # Create a datagram socket
+                    UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+                    # Bind to address and ip
+                    #UDPServerSocket.bind((address, info.port))
+                    print("UDP client up")
+                    # Send
+                    # TODO: handle corruption or dropped packets like TCP does (this applies to all sockets in these python scripts)..
+                    #UDPServerSocket.send('connect'.encode())
+                    UDPServerSocket.sendto('connect', (address, info.port))
+                self.possible.append((info, joinFn))
+                return True
+            return False
+        sb.run(onAddService)
+        
+    def update(self):
+        self.layout_row_dynamic(20, 1)
+        self.label_colored_wrap("Scanning for players on your network...", (255, 255, 255))
+
+        for info, joinFn in self.possible:
+            self.button_label(info.name, joinFn)
         
 class HostVC(vc.ViewController):
     def __init__(self):
