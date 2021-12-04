@@ -69,22 +69,26 @@ class HostView(pf.Window):
             # Create a datagram socket
             UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
             # Bind to address and ip
-            UDPServerSocket.bind((localIP, localPort))
+            if True: #try:
+                UDPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # https://stackoverflow.com/questions/6380057/python-binding-socket-address-already-in-use
+                UDPServerSocket.bind((ad.get_my_ip_address(), localPort))
+            #except socket.error, msg:
+            #    raise socket.error, msg
             print("UDP server up and listening")
-            (bytes_, address) = UDPServerSocket.recvfrom(bufferSize) # "The return value is a pair (bytes, address) where bytes is a bytes object representing the data received and address is the address of the socket sending the data."
-            print("Got message:", bytes_, "from", address)
+            (bytes_, addressAndPort) = UDPServerSocket.recvfrom(bufferSize) # "The return value is a pair (bytes, address) where bytes is a bytes object representing the data received and address is the address of the socket sending the data."
+            print("Got message:", bytes_, "from", addressAndPort)
             # if bytes_ valid, stop the ad:
             if bytes_.startswith('connect'):
                 ad.stop(pair)
 
                 clientMsg = "Message from Client:{}".format(bytes_)
-                clientIP  = "Client IP Address:{}".format(address)
+                clientIP  = "Client IP Address and port:{}".format(addressAndPort)
                 
                 print(clientMsg)
                 print(clientIP)
 
                 # Sending a reply to client
-                UDPServerSocket.sendto(bytes('accept', 'utf-8'), address)
+                UDPServerSocket.sendto('accept', addressAndPort)
         self.thread = Thread(target = threaded_function, args = (1,))
         self.thread.daemon = True # daemon won't stop main thread from finishing
         self.thread.start()

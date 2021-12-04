@@ -3,6 +3,7 @@ from zeroconf import ServiceInfo, Zeroconf
 import netifaces
 import time
 
+# Returns a string.
 def get_my_ip_address():
     """
     Return the/a network-facing IP number for this system.
