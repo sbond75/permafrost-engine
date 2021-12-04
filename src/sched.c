@@ -51,6 +51,11 @@
 #include <SDL.h>
 #include <inttypes.h>
 
+#ifdef __linux__
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#endif
 
 enum taskstate{
     TASK_STATE_ACTIVE,
@@ -957,6 +962,10 @@ static void sched_init_thread_tid_map(void)
         //uint64_t key = thread_id_to_key(s_worker_thread_id[&s_worker_threads[i] - s_worker_threads]);
         uint64_t key = thread_id_to_key(getThreadID(s_worker_threads[i]));
         printf("Put thread ID: %ju\n", key);
+        #ifdef __linux__
+        pid_t x = syscall(__NR_gettid);
+        printf("True thread ID: %ju\n", x);
+        #endif
         k = kh_put(tid, s_thread_tid_map, key, &status);
         assert(status != -1 && status != 0);
         kh_value(s_thread_tid_map, k) = NULL_TID;
