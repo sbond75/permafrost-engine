@@ -23,4 +23,5 @@ def run(onAddService):
     #     zeroconf.close()
 
     #r = zeroconf
+    return (browser, zeroconf)
     #print(r.get_service_info("_http._tcp.local.", "dop._http._tcp.local."))

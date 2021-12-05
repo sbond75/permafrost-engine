@@ -58,6 +58,7 @@ localIP     = "127.0.0.1"
 localPort   = 4567
 bufferSize  = 1024
 
+global newport_chosen
 newport_chosen = None
 
 class HostView(pf.Window):
@@ -77,6 +78,7 @@ class HostView(pf.Window):
                 try:
                     #UDPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # https://stackoverflow.com/questions/6380057/python-binding-socket-address-already-in-use
                     UDPServerSocket.bind((myip, newport))
+                    global newport_chosen
                     newport_chosen = newport
                     break
                 except socket.error, msg:
@@ -121,13 +123,23 @@ class JoinView(pf.Window):
         self.possible = []
 
         # Scan for Bonjour? services
+        browserAndZ = None
         def onAddService(info):
+            if info is None:
+                print("info was None")
+                # This seems to happen randomly sometimes. So restart the listener
+                browser, z = browserAndZ
+                z.close()
+                sb.run(onAddService) # TODO: stack overflow
+                return
             if info.server.startswith('defenders_of_paradise'):
                 # Add to list
                 def joinFn():
                     address = socket.inet_ntoa(info.address)
                     # If we're joining our own IP, use the other port we found that we *can't* listen on in order to join, since if we join the one we are listening on then we will connect to our own game instance!
                     port = info.port
+                    global newport_chosen
+                    print("newport_chosen:",newport_chosen)
                     if address == ad.get_my_ip_address() and newport_chosen is None:
                         port += 1
                     print("Joining", info.name, "with address", address, "and port", port)
@@ -150,7 +162,7 @@ class JoinView(pf.Window):
                 self.possible.append((info, joinFn))
                 return True
             return False
-        sb.run(onAddService)
+        browserAndZ = sb.run(onAddService)
         
     def update(self):
         self.layout_row_dynamic(20, 1)

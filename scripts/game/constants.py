@@ -54,3 +54,9 @@ EVENT_SIMSTATE_CHANGE            = 0x20003
 EVENT_SESSION_SHOW               = 0x20004
 EVENT_BUILDING_CHOSEN_FOR_PLACEMENT = 0x20016
 EVENT_SPELL_CAST                    = 0x20029
+
+EVENT_PUSH_ACTIONS                  = 0x20005
+EVENT_POP_ACTIONS                   = 0x20006
+
+EVENT_DIALOG_SHOW                   = 0x2002b
+EVENT_DIALOG_HIDE                   = 0x2002c
