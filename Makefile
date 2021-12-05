@@ -138,8 +138,8 @@ WARNING_FLAGS = \
 	-Wno-unused-variable \
 	#-Werror
 
-EXTRA_DEBUG_FLAGS = -g
-EXTRA_RELEASE_FLAGS = -DNDEBUG
+EXTRA_DEBUG_FLAGS = -g3 -fvar-tracking -DDEBUG -O0 #-Og
+EXTRA_RELEASE_FLAGS = -DNDEBUG -O3
 EXTRA_FLAGS = $(EXTRA_$(TYPE)_FLAGS)
 
 ifneq ($(ASAN),0)
@@ -154,7 +154,6 @@ CFLAGS = \
 	`pkg-config --cflags gl` \
 	`pkg-config --cflags python2` \
 	-std=c99 \
-	-Og \
 	-fno-strict-aliasing \
 	-fwrapv \
 	$(ASAN_CFLAGS) \
