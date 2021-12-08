@@ -211,8 +211,10 @@ static bool e_register_handler(uint64_t key, struct handler_desc *desc)
         vec_hd_t vec = kh_value(s_event_handler_table, k);
 
         int idx = vec_hd_indexof(&vec, *desc, e_handlers_equal);
-        if(idx != -1)
-            return false; /* Don't allow registering duplicate handlers for the same event */
+        if(idx != -1) {
+	  printf("Hack: registering duplicate handlers for the same event"); // Temp hack disabling this:
+        //    return false; /* Don't allow registering duplicate handlers for the same event */
+	}
 
         vec_hd_push(&vec, *desc);
         kh_value(s_event_handler_table, k) = vec;

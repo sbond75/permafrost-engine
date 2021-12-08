@@ -72,6 +72,7 @@ class AnimMoveable(pf.AnimEntity, pf.MovableEntity, cont.Controllable):
                 icon_hover ="assets/icons/move-command-hover.png",
                 icon_active="assets/icons/move-command-active.png",
                 func = AnimMoveable.__move_action,
+                ent = self,
                 hotkey = pf.SDLK_m,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_TEXT,
@@ -84,10 +85,11 @@ class AnimMoveable(pf.AnimEntity, pf.MovableEntity, cont.Controllable):
                 icon_hover ="assets/icons/stop-command-active.png",
                 icon_active="assets/icons/stop-command-hover.png",
                 func = AnimMoveable.__stop_action,
+                ent = self,
                 hotkey = pf.SDLK_s,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_TEXT,
-                    ("Oder all selected units to immediately stop any action they are "
+                    ("Order all selected units to immediately stop any action they are "
                     "currently performing.",)))
         return super(AnimMoveable, self).action(idx)
 

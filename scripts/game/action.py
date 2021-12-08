@@ -5,6 +5,9 @@
 #
 
 import common.timer
+import units.controllable as cont
+import game.globals
+import pf
 
 # Unique token ot be returned from an action func 
 # to know we shouldn't start the cooldown 
@@ -26,7 +29,7 @@ class ActionTooltipBodyDesc(object):
 
 class ActionDesc(object):
 
-    def __init__(self, name, icon_normal, icon_hover, icon_active, func, args=(), kwargs={}, 
+    def __init__(self, name, icon_normal, icon_hover, icon_active, func, ent, args=(), kwargs={}, 
             hotkey=None, disable_predicate=lambda: False, icon_disabled=None, 
             tooltip_desc=ActionTooltipBodyDesc.empty()):
         self.name = name
@@ -34,7 +37,23 @@ class ActionDesc(object):
         self.icon_hover = icon_hover
         self.icon_active = icon_active
         self.icon_disabled = icon_normal if icon_disabled is None else icon_disabled
-        self.func = func
+        self.ent = ent
+        def func_wrapper():
+            # Send this action over the network, then call the function it wraps
+            if game.globals.joined is not None: # and isinstance(self.ent, cont.Controllable):
+                # An action is performed on a specific unit and at a specific position. So use its ID:
+                pos = pf.map_pos_under_cursor() # TODO: if a unit is clicked, don't use this but use the clicked unit's entID?
+                c = game.globals.get_class_that_defined_method(func)
+                if c is None:
+                    # TODO: Wrap it in a new class maybe like `foo = dict(x=1, y=2)` from https://stackoverflow.com/questions/1123000/does-python-have-anonymous-classes
+                    print("Class for method",func,"was None")
+                    import code; code.interact(local=locals())
+                else:
+                    actionFuncName = c.__name__ + '.' + func.__name__
+                    game.globals.send('action' + actionFuncName #self.name # Action type identification
+                                      , entID=self.ent.__uid__, data=pos)
+            func()
+        self.func = func_wrapper # This function is called when you press the button in the toolbar.. I thought it would be when you press the button in the toolbar *and then* click on what you want to use it on..
         self.args = args
         self.kwargs = kwargs
         self.hotkey = hotkey
@@ -44,7 +63,7 @@ class ActionDesc(object):
 
 class CooldownActionDesc(ActionDesc):
 
-    def __init__(self, name, icon_normal, icon_hover, icon_active, func, cooldown, args=(), kwargs={}, 
+    def __init__(self, name, icon_normal, icon_hover, icon_active, func, ent, cooldown, args=(), kwargs={}, 
             hotkey=None, disable_predicate=lambda: False, icon_disabled=None,
             tooltip_desc=ActionTooltipBodyDesc.empty()):
 
@@ -63,7 +82,7 @@ class CooldownActionDesc(ActionDesc):
                 self.start_cooldown()
 
         super(CooldownActionDesc, self).__init__(name, icon_normal, icon_hover, icon_active, 
-            func_wrapper, args, kwargs, hotkey, disable_pred_wrapper, icon_disabled, tooltip_desc)
+                                                 func_wrapper, ent, args, kwargs, hotkey, disable_pred_wrapper, icon_disabled, tooltip_desc)
 
     def start_cooldown(self):
         def on_tick(arg):

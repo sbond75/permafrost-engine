@@ -66,7 +66,14 @@ class AnimCombatable(pf.AnimEntity, pf.CombatableEntity, cont.Controllable):
 
     def on_death_anim_finish(self, event):
         self.unregister(pf.EVENT_ANIM_CYCLE_FINISHED, AnimCombatable.on_death_anim_finish)
-        game.globals.scene_objs.remove(self)
+        print(self)
+        print(game.globals.scene_objs)
+        try:
+            game.globals.scene_objs.remove(self)
+        except:
+            import traceback
+            traceback.print_exc()
+            pass # TODO: temp
 
     def action(self, idx):
         if idx == 2:
@@ -76,6 +83,7 @@ class AnimCombatable(pf.AnimEntity, pf.CombatableEntity, cont.Controllable):
                 icon_hover ="assets/icons/hold-position-command-hover.png",
                 icon_active="assets/icons/hold-position-command-active.png",
                 func = AnimCombatable.__hold_position_action,
+                ent = self,
                 hotkey = pf.SDLK_h,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_TEXT,
@@ -88,6 +96,7 @@ class AnimCombatable(pf.AnimEntity, pf.CombatableEntity, cont.Controllable):
                 icon_hover ="assets/icons/attack-move-command-active.png",
                 icon_active="assets/icons/attack-move-command-hover.png",
                 func = AnimCombatable.__attack_action,
+                ent = self,
                 hotkey = pf.SDLK_a,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_TEXT,

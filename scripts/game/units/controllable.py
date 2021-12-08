@@ -37,6 +37,10 @@ import pf
 from constants import *
 import action
 
+# Networking #
+#netEntCounter = 0
+# #
+
 class Controllable(pf.Entity):
     """
     Mixin base that adds the ability to customize the entity's actions in the action pad.
@@ -58,6 +62,9 @@ class Controllable(pf.Entity):
                 if other_action.hotkey == action.hotkey:
                     raise RuntimeError("Conflict in hotkeys for instance of %s" % type(self).__name__)
             actions += [action]
+
+        #netEntCounter += 1
+        #self.netEntID = netEntCounter
 
     @abstractmethod
     def action(self, idx):

@@ -68,6 +68,7 @@ class Blagostrazh(am.AnimMoveable, ac.AnimCombatable, pr.Presentable, sh.StatusH
                 icon_active="assets/icons/blessing-icon-active.png",
                 icon_disabled="assets/icons/blessing-icon-disabled.png",
                 func = self.__blessing_action,
+                ent = self,
                 cooldown = 60,
                 hotkey = pf.SDLK_b,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(

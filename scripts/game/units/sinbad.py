@@ -83,15 +83,19 @@ class Sinbad(am.AnimMoveable, ac.AnimCombatable):
     def death_anim(self): 
         return "JumpStart"
 
-    # def action(self, idx):
-    #     if idx == 8:
-    #         return action.ActionDesc(
-    #             icon_normal="assets/icons/glest/magic-actions/summoner_daemon_normal.bmp",
-    #             icon_hover="assets/icons/glest/magic-actions/summoner_daemon_hover.bmp",
-    #             icon_active="assets/icons/glest/magic-actions/summoner_daemon_active.bmp",
-    #             action = Sinbad.__toggle_idle_action,
-    #             hotkey = pf.SDL_SCANCODE_V)
-    #     return super(Sinbad, self).action(idx)
+    def action(self, idx):
+        if idx == 8:
+            return action.ActionDesc(
+                name = "Summon Daemon",
+                icon_normal="assets/icons/glest/magic-actions/summoner_daemon_normal.bmp",
+                icon_hover="assets/icons/glest/magic-actions/summoner_daemon_hover.bmp",
+                icon_active="assets/icons/glest/magic-actions/summoner_daemon_active.bmp",
+                func = Sinbad.__toggle_idle_action,
+                ent = self,
+                tooltip_desc = action.ActionTooltipBodyDesc(
+                    action.ActionTooltipBodyDesc.TOOLTIP_TEXT,
+                    ("Let 'em loose",)))
+        return super(Sinbad, self).action(idx)
 
     @classmethod
     def __toggle_idle_action(cls):

@@ -927,7 +927,7 @@ static PyObject *register_handler(PyObject *self, PyObject *args, int simmask)
 
     bool ret = E_Global_ScriptRegister(event, callable, user_arg, simmask);
     if(!ret) {
-        PyErr_SetString(PyExc_RuntimeError, "Could not register handler for event.");
+      PyErr_SetString(PyExc_RuntimeError, "Could not register handler for event. You can't register duplicate handlers for the same event."); // See event.c where e_register_handler returns false
         return NULL;
     }
     Py_RETURN_NONE;

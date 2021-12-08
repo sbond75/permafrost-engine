@@ -54,9 +54,7 @@ from threading import Thread
 import socket
 import common.zeroconfTesting as sb # service browser
 
-localIP     = "127.0.0.1"
-localPort   = 4567
-bufferSize  = 1024
+import game.globals
 
 global newport_chosen
 newport_chosen = None
@@ -72,7 +70,7 @@ class HostView(pf.Window):
             # Create a datagram socket
             UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
             # Bind to address and ip
-            newport = localPort
+            newport = game.globals.localPort
             myip=ad.get_my_ip_address()
             while True:
                 try:
@@ -88,7 +86,7 @@ class HostView(pf.Window):
                     continue
                     #raise socket.error, msg
             print("UDP server up and listening")
-            (bytes_, addressAndPort) = UDPServerSocket.recvfrom(bufferSize) # "The return value is a pair (bytes, address) where bytes is a bytes object representing the data received and address is the address of the socket sending the data."
+            (bytes_, addressAndPort) = UDPServerSocket.recvfrom(game.globals.bufferSize) # "The return value is a pair (bytes, address) where bytes is a bytes object representing the data received and address is the address of the socket sending the data."
             print("Got message:", bytes_, "from", addressAndPort)
             # if bytes_ valid, stop the ad:
             if bytes_.startswith('connect'):
@@ -155,7 +153,7 @@ class JoinView(pf.Window):
                     UDPServerSocket.sendto('connect', (address, port))
 
                     # Get response
-                    (bytes_, addressAndPort) = UDPServerSocket.recvfrom(bufferSize)
+                    (bytes_, addressAndPort) = UDPServerSocket.recvfrom(game.globals.bufferSize)
                     if bytes_.startswith('accept'):
                         # Start game
                         pf.global_event(EVENT_JOIN_ACCEPTED, (UDPServerSocket, addressAndPort))
@@ -253,6 +251,8 @@ class IngameVC(vc.ViewController):
         pf.global_event(EVENT_CONTROLLED_FACTION_CHANGED, 1)
 
         # Green guy = Sinbad = commander from supcom. Builds stuff
+        game.globals.joined = False
+        self.accepted_common(event)
 
     def __on_join_accepted(self, event):
         # We joined a game
@@ -263,6 +263,17 @@ class IngameVC(vc.ViewController):
         print("You are Arcadians")
         # This is done in the EVENT_CONTROLLED_FACTION_CHANGED event handler that was registered in this class (called `__on_controlled_faction_chagned`): pf.set_faction_controllable(3, True)
         pf.global_event(EVENT_CONTROLLED_FACTION_CHANGED, 3)
+
+        # Blagostrazh guy = commander. Builds stuff
+        game.globals.joined = True
+        self.accepted_common(event)
+
+    def accepted_common(self, event):
+        game.globals.UDPServerSocket, (game.globals.address, game.globals.port) = event
+        
+        # Start receiver
+        import network_receiver
+        network_receiver.NetworkReceiver().run()
         
     def __on_settings_show(self, event):
         if not self.__settings_shown:

@@ -317,6 +317,7 @@ class SlavPeasant(pf.BuilderEntity, tr.Transporter, pf.CombatableEntity, am.Anim
                 icon_hover ="assets/icons/portraits/barracks-hover.jpg",
                 icon_active="assets/icons/portraits/barracks-active.jpg",
                 func = self.__place_building_action,
+                ent = self,
                 args = (game.buildings.barracks.Barracks,),
                 hotkey = pf.SDLK_b,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
@@ -329,6 +330,7 @@ class SlavPeasant(pf.BuilderEntity, tr.Transporter, pf.CombatableEntity, am.Anim
                 icon_hover ="assets/icons/portraits/tower-hover.jpg",
                 icon_active="assets/icons/portraits/tower-active.jpg",
                 func = self.__place_building_action,
+                ent = self,
                 args = (game.buildings.tower.Tower,),
                 hotkey = pf.SDLK_d,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
@@ -341,6 +343,7 @@ class SlavPeasant(pf.BuilderEntity, tr.Transporter, pf.CombatableEntity, am.Anim
                 icon_hover ="assets/icons/cancel-command-hover.png",
                 icon_active="assets/icons/cancel-command-active.png",
                 func = self.__cancel_action,
+                ent = self,
                 hotkey = pf.SDLK_c,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_TEXT,

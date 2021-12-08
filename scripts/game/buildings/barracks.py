@@ -88,6 +88,7 @@ class Barracks(co.Constructable, st.Storage, sc.StatCombatable, pr.Presentable):
                     resources = {"Gold" : 20, "Iron" : 20},
                     population = 0,
                 ).train_action,
+                ent = self,
                 hotkey = pf.SDLK_w,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_RECIPE,
@@ -108,6 +109,7 @@ class Barracks(co.Constructable, st.Storage, sc.StatCombatable, pr.Presentable):
                     population = 0,
                     validate_unit_hook = lambda u, cls: not isinstance(u, game.units.elite_slav_warrior.EliteSlavWarrior)
                 ).train_action,
+                ent = self,
                 hotkey = pf.SDLK_e,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_RECIPE,
@@ -127,6 +129,7 @@ class Barracks(co.Constructable, st.Storage, sc.StatCombatable, pr.Presentable):
                     resources = {"Wood" : 50},
                     population = 1,
                 ).train_action,
+                ent = self,
                 hotkey = pf.SDLK_y,
                 tooltip_desc = game.action.ActionTooltipBodyDesc(
                     game.action.ActionTooltipBodyDesc.TOOLTIP_RECIPE,

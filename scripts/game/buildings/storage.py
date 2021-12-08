@@ -64,6 +64,7 @@ class Storage(pf.StorageSiteEntity):
                 icon_hover ="assets/icons/config-storage-command-hover.png",
                 icon_active="assets/icons/config-storage-command-active.png",
                 func = self.__config_storage_action,
+                ent = self,
                 hotkey = pf.SDLK_c,
                 tooltip_desc = action.ActionTooltipBodyDesc(
                     action.ActionTooltipBodyDesc.TOOLTIP_TEXT,

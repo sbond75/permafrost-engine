@@ -48,6 +48,7 @@ class Constructable(pf.BuildableEntity):
                     icon_hover ="assets/icons/cancel-command-hover.png",
                     icon_active="assets/icons/cancel-command-active.png",
                     func = self.__cancel_construction_action,
+                    ent = self,
                     hotkey = pf.SDLK_c,
                     tooltip_desc = game.action.ActionTooltipBodyDesc(
                         game.action.ActionTooltipBodyDesc.TOOLTIP_TEXT,
