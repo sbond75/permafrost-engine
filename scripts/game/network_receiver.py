@@ -65,8 +65,18 @@ class NetworkReceiver(pf.Task):
                 # Set unit selection
                 pf.set_unit_selection([entID])
 
+                # Prepare command
+                # TODO: temp hack: #
+                if actionName.endswith("__move_action"):
+                    # Move command
+                    pf.set_move_on_left_click()
+                # #
+
+                # Simulate click on map
+                pf.perform_simulated_click(actionPos)
+                
                 # Restore backup
-                #pf.set_unit_selection(prevSelection)
+                pf.set_unit_selection(prevSelection)
             else:
                 print("Unhandled packet:",b,entID,data)
             

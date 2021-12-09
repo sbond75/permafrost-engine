@@ -642,11 +642,17 @@ static void on_mousedown(void *user, void *event)
 
     enum selection_type sel_type;
     const vec_pentity_t *sel = G_Sel_Get(&sel_type);
-    size_t nmoved = 0;
 
     if(vec_size(sel) == 0 || sel_type != SELECTION_TYPE_PLAYER)
         return;
 
+    G_Move_Move(sel, mouse_coord, attack);
+}
+
+void G_Move_Move(const vec_pentity_t* sel, vec3_t mouse_coord /*on map*/,
+		 bool attack) {
+    size_t nmoved = 0;
+    
     for(int i = 0; i < vec_size(sel); i++) {
 
         const struct entity *curr = vec_AT(sel, i);

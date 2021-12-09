@@ -97,20 +97,29 @@ import inspect
 #             return cls
 #     return None
 
-# https://stackoverflow.com/questions/961048/get-class-that-defined-method/961057#961057
-def get_class_that_defined_method(method):
-    method_name = method.__name__
-    if method.__self__:    
-        classes = [method.__self__.__class__]
-    else:
-        #unbound method
-        classes = [method.im_class]
-    while classes:
-        c = classes.pop()
-        if method_name in c.__dict__:
-            return c
-        else:
-            classes = list(c.__bases__) + classes
+# Custom based on the above:
+def get_class_that_defined_method(meth):
+    c = meth.im_self if meth.im_self is not None else meth.im_class
+    for cls in inspect.getmro(c):
+        if meth.__name__ in cls.__dict__ or "_" + c.__name__ + meth.__name__ in cls.__dict__: # Sometimes there are names like `_AnimMoveable__on_motion_begin`
+            return cls
     return None
+
+
+# https://stackoverflow.com/questions/961048/get-class-that-defined-method/961057#961057
+# def get_class_that_defined_method(method):
+#     method_name = method.__name__
+#     if method.__self__:    
+#         classes = [method.__self__.__class__]
+#     else:
+#         #unbound method
+#         classes = [method.im_class]
+#     while classes:
+#         c = classes.pop()
+#         if method_name in c.__dict__:
+#             return c
+#         else:
+#             classes = list(c.__bases__) + classes
+#     return None
 
 # #

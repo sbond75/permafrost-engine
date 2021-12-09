@@ -47,9 +47,9 @@ class ActionDesc(object):
                 if c is None:
                     # TODO: Wrap it in a new class maybe like `foo = dict(x=1, y=2)` from https://stackoverflow.com/questions/1123000/does-python-have-anonymous-classes
                     print("Class for method",func,"was None")
-                    import code; code.interact(local=locals())
                 else:
                     actionFuncName = c.__name__ + '.' + func.__name__
+                    print(self.ent.__dict__)
                     game.globals.send('action' + actionFuncName #self.name # Action type identification
                                       , entID=self.ent.__uid__, data=pos)
             func()

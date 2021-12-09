@@ -248,7 +248,7 @@ clean:
 	rm -rf $(PF_OBJS) $(PF_DEPS) $(BIN) 
 
 run:
-	@$(BIN) ./ ./scripts/rts/main.py
+	@$(BIN) ./ ./scripts/game/main.py
 
 run_editor:
 	@$(BIN) ./ ./scripts/editor/main.py

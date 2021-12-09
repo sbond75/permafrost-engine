@@ -74,6 +74,25 @@ import view_controllers.ingame_vc as dvc
 from constants import *
 from units import *
 
+
+# https://stackoverflow.com/questions/19514288/locals-and-globals-in-stack-trace-on-exception-python #
+import sys, traceback
+
+def excepthook(type, value, tb):
+    traceback.print_exception(type, value, tb)
+
+    while tb.tb_next:
+        tb = tb.tb_next
+
+    #print >>sys.stderr, 'Locals:',  tb.tb_frame.f_locals
+    print >>sys.stderr, 'Globals:', tb.tb_frame.f_globals
+    
+    import code
+    code.interact(local=tb.tb_frame.f_locals)
+
+sys.excepthook = excepthook
+# #
+
 ############################################################
 # Global configs                                           #
 ############################################################
