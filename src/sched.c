@@ -964,7 +964,7 @@ static void sched_init_thread_tid_map(void)
         printf("Put thread ID: %ju\n", key);
         #ifdef __linux__
         pid_t x = syscall(__NR_gettid);
-        printf("True thread ID: %ju\n", x);
+        printf("This thread ID: %jd\n", x);
         #endif
         k = kh_put(tid, s_thread_tid_map, key, &status);
         assert(status != -1 && status != 0);
