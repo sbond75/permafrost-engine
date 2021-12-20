@@ -262,6 +262,8 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
     if(!err_ctx->occurred)
         return;
 
+    // Handle with command-line too: printf's below //
+
     const char *font = UI_GetActiveFont();
     UI_SetActiveFont("__default__");
 
@@ -277,7 +279,9 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
     const struct rect adj_bounds = UI_BoundsForAspectRatio(bounds, 
         vres, adj_vres, ANCHOR_X_CENTER | ANCHOR_Y_CENTER);
 
-    if(nk_begin_with_vres(ctx, "Unhandled Python Exception", 
+    const char* msg = "Unhandled Python Exception";
+    printf("%s\n", msg);
+    if(nk_begin_with_vres(ctx, msg, 
         nk_rect(adj_bounds.x, adj_bounds.y, adj_bounds.w, adj_bounds.h), 
         NK_WINDOW_TITLE | NK_WINDOW_BORDER, (struct nk_vec2i){adj_vres.x, adj_vres.y})) {
 
@@ -328,6 +332,7 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
         }
 
         nk_layout_row_dynamic(ctx, 18, 1);
+	printf("%s\n", buff);
         nk_label_colored(ctx, buff, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_rgb(255, 0, 0));
 
         if(message) {
@@ -335,10 +340,12 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
             nk_layout_row_dynamic(ctx, 8, 1);
 
             pf_snprintf(buff, sizeof(buff), "    File: \"%s\"", filename ? filename : "<string>", lineno);
+	    printf("%s\n", buff);
             nk_layout_row_dynamic(ctx, 18, 1);
             nk_label_colored(ctx, buff, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_rgb(255, 255, 0));
 
             pf_snprintf(buff, sizeof(buff), "    Line: %d", lineno);
+	    printf("%s\n", buff);
             nk_layout_row_dynamic(ctx, 18, 1);
             nk_label_colored(ctx, buff, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_rgb(255, 255, 0));
 
@@ -352,6 +359,7 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
                 char *curr = pf_strtok_r(buff, "\n", &saveptr);
                 while(curr) {
                     struct nk_color clr = (idx == 0) ? nk_rgb(255, 255, 255) : nk_rgb(255, 0, 0);
+		    printf("%s\n", curr);
                     nk_layout_row_dynamic(ctx, 18, 1);
                     nk_label_colored(ctx, curr, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, clr);
                     curr = pf_strtok_r(NULL, "\n", &saveptr);
@@ -365,16 +373,21 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
         
             nk_layout_row_dynamic(ctx, 8, 1);
             nk_layout_row_dynamic(ctx, 18, 1);
-            nk_label_colored(ctx, "Traceback:", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_rgb(255, 0, 0));
+	    const char* msg = "Traceback:";
+	    printf("%s\n", msg);
+            nk_label_colored(ctx, msg, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_rgb(255, 0, 0));
 
             long depth = 0;
-            PyTracebackObject *tb = (PyTracebackObject*)err_ctx->traceback;
+            PyTracebackObject *tb = (PyTracebackObject*)err_ctx->traceback, *tbLast;
+	    PyTracebackObject *lastTB = tb;
 
             while (tb != NULL) {
                 depth++;
                 tb = tb->tb_next;
+		lastTB = tb;
             }
             tb = (PyTracebackObject*)err_ctx->traceback;
+	    lastTB = tb;
 
             while (tb != NULL) {
                 if (depth <= 128) {
@@ -382,6 +395,7 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
                     char filebuff[512] = "";
                     pf_snprintf(filebuff, sizeof(filebuff), "  [%02ld] %s: %d", depth,
                         PyString_AsString(tb->tb_frame->f_code->co_filename), tb->tb_lineno);
+		    printf("%s\n", filebuff);
                     nk_layout_row_dynamic(ctx, 18, 1);
                     nk_label_colored(ctx, filebuff, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, 
                         nk_rgb(255, 255, 0));
@@ -392,13 +406,27 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
                     size_t len = strlen(linebuff);
                     linebuff[len > 0 ? len-1 : 0] = '\0'; /* trim newline */
 
+		    printf("%s\n", linebuff);
                     nk_layout_row_dynamic(ctx, 18, 1);
                     nk_label_colored(ctx, linebuff, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, 
                         nk_rgb(255, 255, 255));
                 }
                 depth--;
+		//lastTB = tb;
                 tb = tb->tb_next;
             }
+
+	    // Grab locals on last frame
+	    if (lastTB != NULL) {
+	      PyObject* locals = lastTB->tb_frame->f_locals;//f_frame->f_locals;
+	      S_RunString("import code; code.interact(local=locals())", locals);
+	      // If we leave the above, consider it "continue"'ed:
+	      err_ctx->occurred = false;
+	      Py_CLEAR(err_ctx->type);
+	      Py_CLEAR(err_ctx->value);
+	      Py_CLEAR(err_ctx->traceback);
+	      G_SetSimState(err_ctx->prev_state);
+	    }
         }
 
         nk_layout_row_dynamic(ctx, 8, 1);
@@ -424,5 +452,13 @@ void S_Error_Update(struct py_err_ctx *err_ctx)
     }
     nk_end(ctx);
     UI_SetActiveFont(font);
+
+    // Enter REPL
+    // TODO: only do this in debug mode
+    //PyErr_SetString(PyExc_TypeError, "Oh no!"); // Just for side effect
+    //S_RunString("import code; code.interact(local=locals())");
+    //S_RunString("import pdb; pdb.pm()"); // Enter "post-mortem" ("pm") debugging  // https://stackoverflow.com/questions/9790555/how-can-i-interactively-debug-exceptions-in-python-using-something-besides-idle , https://docs.python.org/2.7/library/pdb.html
+
+    // TODO: USE .tb_frame.f_locals from the PyTracebackobject
 }
 

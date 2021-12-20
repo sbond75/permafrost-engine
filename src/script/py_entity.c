@@ -50,6 +50,7 @@
 
 #include <assert.h>
 
+#include <frameobject.h>
 
 #define CHK_TRUE(_pred, _label) do{ if(!(_pred)) goto _label; }while(0)
 #define ARR_SIZE(a) (sizeof(a)/sizeof(a[0]))
@@ -3559,7 +3560,13 @@ static PyObject *s_new_custom_class(const char *name, const vec_attr_t *construc
 
     PyTypeObject *tp_class = (PyTypeObject*)class;
     ret = tp_class->tp_new(tp_class, args, kwargs);
+    /* printf("1~%p~\n",ret); */
+    /* fflush(stdout); */
+    /* printf("2~%p~\n",ret); */
+    /* fflush(stdout); */
     if(ret) {
+      /* printf("3~%p~\n",ret); */
+      /* fflush(stdout); */
         int status = tp_class->tp_init(ret, args, NULL);
         if(status) {
             Py_CLEAR(ret);
@@ -3675,6 +3682,37 @@ script_opaque_t S_Entity_ObjForUID(uint32_t uid)
     return kh_value(s_uid_pyobj_table, k);
 }
 
+void showPythonStackTrace(
+			  PyThreadState *tstate /*= PyThreadState_GET();*/) {
+  PyErr_PrintEx(0);
+  
+  // Make stack trace //
+  /* // https://stackoverflow.com/questions/1796510/accessing-a-python-traceback-from-the-c-api */
+  /* //PyThreadState *tstate = PyThreadState_GET(); */
+  /* if (NULL != tstate && NULL != tstate->frame) { */
+  /*   PyFrameObject *frame = tstate->frame; */
+
+  /*   printf("Python stack trace:\n"); */
+  /*   while (NULL != frame) { */
+  /*     // int line = frame->f_lineno; */
+  /*     /\* */
+  /* 	frame->f_lineno will not always return the correct line number */
+  /* 	you need to call PyCode_Addr2Line(). */
+  /*     *\/ */
+  /*     int line = PyCode_Addr2Line(frame->f_code, frame->f_lasti); */
+  /*     const char *filename = PyString_AsString(frame->f_code->co_filename); */
+  /*     const char *funcname = PyString_AsString(frame->f_code->co_name); */
+  /*     printf("    %s(%d): %s\n", filename, line, funcname); */
+  /*     frame = frame->f_back; */
+  /*   } */
+  /* } */
+
+  /* PyTracebackObject* traceback = get_the_traceback(); */
+  /* int line = traceback->tb_lineno; */
+  /* const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename); */
+  // //
+}
+
 script_opaque_t S_Entity_ObjFromAtts(const char *path, const char *name,
                                      const khash_t(attr) *attr_table, 
                                      const vec_attr_t *construct_args)
@@ -3698,7 +3736,8 @@ script_opaque_t S_Entity_ObjFromAtts(const char *path, const char *name,
         if(PyErr_Occurred()) {
             PyThreadState *tstate = PyThreadState_GET();
             PyObject *repr = PyObject_Repr(tstate->curexc_value);
-            printf("[IMPORT] Unable to make %s instance: %s\n", cls, PyString_AS_STRING(repr));
+	    showPythonStackTrace(tstate);
+	    printf("[IMPORT] Unable to make %s instance: %s. Stack trace is shown above.\n", cls, PyString_AS_STRING(repr));
             Py_DECREF(repr);
             PyErr_Clear();
         }

@@ -31,6 +31,24 @@ let
 #    optimizeWithFlags (pkg.overrideAttrs (old: rec { separateDebugInfo = true; dontStrip = true;  preConfigure = #old.preConfigure ++
  #                                                      ''cmakeFlags="$cmakeFlags -DCMAKE_BUILD_TYPE=Debug"''; })) [ "-DDEBUG" "-O0" "-g3" ];
   frameworks = pkgs.darwin.apple_sdk.frameworks;
+  # https://github.com/NixOS/nixpkgs/blob/master/doc/languages-frameworks/python.section.md
+  # python-with-my-packages2 = let
+  #   packageOverrides = self: super: {
+  #     zeroconf-py2compat = {
+  #       version = "0.19.13";
+  #       src =  super.fetchPypi {
+  #         pname = "zeroconf-py2compat";
+  #         inherit version;
+  #         sha256 = "08blshqj9zj1wyjhhw3kl2vas75vhhicvv72flvf1z3jvapgw295";
+  #       };
+  #     };
+  #   };
+  # in pkgs.python27.override {inherit packageOverrides; self = python-with-my-packages2;};
+  python-with-my-packages = python27.withPackages (p: with p; [
+    #pip # Now you can use something like `python -m pip download zeroconf-py2compat` to download pip packages to your shell's current directory
+    (callPackage ./zeroconf-py2compat.nix {})
+    (callPackage ./netifaces.nix {})
+  ]);
 in
 mkShell {
   buildInputs = [
@@ -43,7 +61,8 @@ mkShell {
     (withDebuggingCompiled SDL2)
     pkg-config
 
-    python27
+    python-with-my-packages
+    #python-with-my-packages2.withPackages(ps: [ps.zeroconf-py2compat]).env
   ]; # Note: for macos need this: write this into the path indicated:
   # b) For `nix-env`, `nix-build`, `nix-shell` or any other Nix command you can add
   #   { allowUnsupportedSystem = true; }

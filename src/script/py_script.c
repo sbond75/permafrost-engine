@@ -124,6 +124,7 @@ static PyObject *PyPf_clear_unit_selection(PyObject *self);
 static PyObject *PyPf_get_unit_selection(PyObject *self);
 static PyObject *PyPf_set_unit_selection(PyObject *self, PyObject *args);
 static PyObject *PyPf_get_hovered_unit(PyObject *self);
+static PyObject *PyPf_uid_for_entity(PyObject *self, PyObject *args);
 static PyObject *PyPf_entities_for_tag(PyObject *self, PyObject *args);
 
 static PyObject *PyPf_hide_healthbars(PyObject *self);
@@ -154,6 +155,7 @@ static PyObject *PyPf_mouse_over_minimap(PyObject *self);
 static PyObject *PyPf_map_height_at_point(PyObject *self, PyObject *args);
 static PyObject *PyPf_map_nearest_pathable(PyObject *self, PyObject *args);
 static PyObject *PyPf_map_pos_under_cursor(PyObject *self);
+static PyObject* PyPf_perform_simulated_click(PyObject* self, PyObject* args);
 static PyObject *PyPf_draw_text(PyObject *self, PyObject *args);
 static PyObject *PyPf_set_storage_site_ui_style(PyObject *self, PyObject *args);
 static PyObject *PyPf_set_storage_site_ui_border_color(PyObject *self, PyObject *args);
@@ -399,6 +401,10 @@ static PyMethodDef pf_module_methods[] = {
     (PyCFunction)PyPf_get_hovered_unit, METH_NOARGS,
     "Get the closest unit under the mouse cursor, or None."},
 
+    {"uid_for_entity", 
+    (PyCFunction)PyPf_uid_for_entity, METH_VARARGS,
+    "Get the uid (unique identifier) for an entity object."},
+    
     {"entities_for_tag", 
     (PyCFunction)PyPf_entities_for_tag, METH_VARARGS,
     "Get a tuple of entities that have the specific tag."},
@@ -515,6 +521,11 @@ static PyMethodDef pf_module_methods[] = {
     "Returns the XYZ coordinate of the point of the map underneath the cursor. Returns 'None' if "
     "the cursor is not over the map."},
 
+    {"perform_simulated_click",
+    (PyCFunction)PyPf_perform_simulated_click, METH_VARARGS,
+    "Sets the position of the next left click and clicks on the map there. The command set by the "
+    "`set_`-prefixed functions will be issued using this."},
+    
     {"set_move_on_left_click",
     (PyCFunction)PyPf_set_move_on_left_click, METH_NOARGS,
     "Set the cursor to target mode. The next left click will issue a move command to the location "
@@ -927,7 +938,7 @@ static PyObject *register_handler(PyObject *self, PyObject *args, int simmask)
 
     bool ret = E_Global_ScriptRegister(event, callable, user_arg, simmask);
     if(!ret) {
-        PyErr_SetString(PyExc_RuntimeError, "Could not register handler for event.");
+      PyErr_SetString(PyExc_RuntimeError, "Could not register handler for event. You can't register duplicate handlers for the same event."); // See event.c where e_register_handler returns false
         return NULL;
     }
     Py_RETURN_NONE;
@@ -1411,6 +1422,25 @@ static PyObject *PyPf_get_hovered_unit(PyObject *self)
     Py_RETURN_NONE;
 }
 
+typedef struct {
+    PyObject_HEAD
+    struct entity *ent;
+}PyEntityObject;
+static PyObject *PyEntity_get_uid(PyEntityObject *self, void *closure);
+
+static PyObject *PyPf_uid_for_entity(PyObject *self, PyObject *args) { 
+    assert(Sched_UsingBigStack()); // TODO: what does this do?
+
+    PyObject *o;
+    if(!PyArg_ParseTuple(args, "O", &o)) {
+      PyErr_SetString(PyExc_TypeError, "Argument must an entity."); // TODO: assert entity and not just object
+        return NULL;
+    }
+
+    // TODO: dec/incref?..
+    return PyEntity_get_uid((PyEntityObject*)o, NULL);
+}
+  
 static PyObject *PyPf_entities_for_tag(PyObject *self, PyObject *args)
 {
     assert(Sched_UsingBigStack());
@@ -1883,6 +1913,22 @@ static PyObject *PyPf_map_pos_under_cursor(PyObject *self)
     }else {
         Py_RETURN_NONE;
     }
+}
+
+static PyObject* PyPf_perform_simulated_click(PyObject* self, PyObject* args) {
+    float x, z;
+
+    if(!PyArg_ParseTuple(args, "(ff)", &x, &z)) {
+        PyErr_SetString(PyExc_TypeError, "Arguments must be a tuple of two floats.");
+        return NULL;
+    }
+
+    enum selection_type sel_type;
+    const vec_pentity_t *sel = G_Sel_Get(&sel_type);
+    vec3_t mouse_coord = {x, 0, z};
+    bool attack = true; // TODO: temp hack
+    G_Move_Move(sel, mouse_coord /*on map*/,
+		     attack);
 }
 
 static PyObject *PyPf_set_move_on_left_click(PyObject *self)
@@ -3130,7 +3176,7 @@ void S_Shutdown(void)
 }
 
 // TODO: untested function
-bool S_RunString(const char *str)
+bool S_RunString(const char *str, PyObject* local_dict /* can be null, to use globals */)
 {
     bool ret = false;
     PyObject *main_module = PyImport_AddModule("__main__"); /* borrowed */
@@ -3151,7 +3197,7 @@ bool S_RunString(const char *str)
     /*     Py_DECREF(f); */
     /* } */
 
-    PyObject *result = PyRun_StringFlags(str, Py_single_input /* Py_single_input for a single statement, or Py_file_input for more than a statement */, global_dict, global_dict, NULL);
+    PyObject *result = PyRun_StringFlags(str, Py_single_input /* Py_single_input for a single statement, or Py_file_input for more than a statement */, global_dict, local_dict == NULL ? global_dict : local_dict, NULL);
     ret = (result != NULL);
     Py_XDECREF(result);
 

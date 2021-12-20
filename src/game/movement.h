@@ -39,6 +39,8 @@
 #include "../pf_math.h"
 #include <stdbool.h>
 
+#include "public/game.h" // pentity
+
 #define MOVE_TICK_RES (20)
 
 struct map;
@@ -66,6 +68,10 @@ bool G_Move_InTargetMode(void);
 
 bool G_Move_SaveState(struct SDL_RWops *stream);
 bool G_Move_LoadState(struct SDL_RWops *stream);
+
+// Issues a move action to unit selection `sel`
+void G_Move_Move(const vec_pentity_t* sel, vec3_t mouse_coord /*on map*/,
+		 bool attack);
 
 #endif
 
