@@ -1,4 +1,8 @@
-This project is based on [https://github.com/eduard-permyakov/permafrost-engine](https://github.com/eduard-permyakov/permafrost-engine). [Build instructions](## Building Permafrost Engine ##) have been updated to reflect the modifications made.
+This project is based on [https://github.com/eduard-permyakov/permafrost-engine](https://github.com/eduard-permyakov/permafrost-engine).
+
+# Building
+
+See the [build instructions](#building-permafrost-engine) which have been updated to reflect the modifications made in this fork.
 
 ## ![Logo](docs/images/logo.png) ##
 
@@ -86,11 +90,13 @@ Python is built with a subset of the default modules and packaged with a trimmed
 
 1. `git clone --recursive https://github.com/sbond75/permafrost-engine.git`
 2. `cd permafrost-engine`
-3. `make pf`
+3. `nix-shell` -- requires Nix. To install Nix, see [https://nixos.org/download.html](https://nixos.org/download.html)
+4. `make pf` within the Nix shell created above.
 
-Now you can invoke `make run` to launch the demo or `make run_editor` to launch the map editor.
-Optionally, invoke `make launchers` to create the `./demo` and `./editor` binaries which don't 
+- Now you can invoke `make run` to launch the demo or `make run_editor` to launch the map editor.
+- Optionally, invoke `make launchers` to create the `./demo` and `./editor` binaries which don't 
 require any arguments.
+- You can also use `./bin/pf . ./scripts/game/main.py` which is the same as `make run`.
 
 #### For Windows ####
 
